@@ -1,0 +1,3859 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="調査アプリ">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="description" content="蕪島ウミネコ繁殖地フィールド調査データ入力アプリ">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+
+    <!-- Standard Icon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+
+    <title>野外調査データ入力 v6</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* ========== HOME SCREEN STYLES ========== */
+        .home-screen {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 20px;
+            display: none;
+        }
+
+        .home-screen.active {
+            display: block;
+        }
+
+        .home-header {
+            text-align: center;
+            color: white;
+            padding: 20px 20px 15px 20px;
+        }
+
+        .home-header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .home-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .calendar-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .calendar-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .calendar-nav button:hover {
+            background: #5568d3;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .calendar-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-day.today {
+            background: #e7f3ff;
+            border-color: #667eea;
+        }
+
+        .calendar-day.has-data {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .day-number {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .day-count {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        /* Home tabs */
+        .home-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .home-tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .home-tab-btn:hover {
+            background: #f0f4ff;
+        }
+
+        .home-tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .home-tab-content {
+            display: none;
+        }
+
+        .home-tab-content.active {
+            display: block;
+        }
+
+        /* Nest sheet table */
+        .nest-sheet-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sheet-header h2 {
+            color: #333;
+            margin: 0;
+        }
+
+        .sheet-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit {
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-edit:hover {
+            background: #c82333;
+        }
+
+        .btn-save-sheet {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: none;
+        }
+
+        .btn-save-sheet.active {
+            display: block;
+        }
+
+        .btn-save-sheet:hover {
+            background: #218838;
+        }
+
+        .btn-cancel-edit {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: none;
+        }
+
+        .btn-cancel-edit.active {
+            display: block;
+        }
+
+        .btn-cancel-edit:hover {
+            background: #5a6268;
+        }
+
+        .btn-check {
+            padding: 10px 20px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn-check:hover {
+            background: #138496;
+        }
+
+        .nest-sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .nest-sheet-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid #5568d3;
+            white-space: nowrap;
+        }
+
+        .nest-sheet-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .nest-sheet-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .nest-sheet-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .nest-sheet-table tbody tr:nth-child(even):hover {
+            background: #e9ecef;
+        }
+
+        .nest-sheet-table tbody tr.draggable {
+            cursor: move;
+        }
+
+        .nest-sheet-table tbody tr.dragging {
+            opacity: 0.5;
+            background: #667eea;
+            color: white;
+        }
+
+        .nest-sheet-table tbody tr.drag-over {
+            border-top: 3px solid #667eea;
+        }
+
+        .nest-sheet-table input,
+        .nest-sheet-table select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .nest-sheet-table input:focus,
+        .nest-sheet-table select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Specific column widths */
+        .nest-sheet-table th:nth-child(1),
+        .nest-sheet-table td:nth-child(1) {
+            width: 60px;
+            text-align: center;
+        }
+
+        .nest-sheet-table th:nth-child(2),
+        .nest-sheet-table td:nth-child(2) {
+            width: 80px;
+        }
+
+        .nest-sheet-table th:nth-child(5),
+        .nest-sheet-table td:nth-child(5),
+        .nest-sheet-table th:nth-child(10),
+        .nest-sheet-table td:nth-child(10) {
+            width: 100px;
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .quick-actions h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .action-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: #6c757d;
+        }
+
+        .action-btn.secondary:hover {
+            background: #5a6268;
+        }
+
+        .action-btn.success {
+            background: #28a745;
+        }
+
+        .action-btn.success:hover {
+            background: #218838;
+        }
+
+        /* ========== SURVEY SCREEN STYLES ========== */
+        .survey-screen {
+            max-width: 1024px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            display: none;
+            flex-direction: column;
+        }
+
+        .survey-screen.active {
+            display: flex;
+        }
+
+        /* Top Section - 固定 */
+        .top-section {
+            background: #ffffff;
+            border-bottom: 2px solid #ddd;
+            padding: 20px;
+        }
+
+        .back-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: #5a6268;
+        }
+
+        .top-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .id-display {
+            background: #667eea;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stake-input {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            flex: 0.1;
+        }
+
+        .stake-input label {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .stake-input .info-text {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .individual-info {
+            display: flex;
+            gap: 5px;
+            flex: 0.8;
+        }
+
+        .info-field {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            flex: 1;
+        }
+
+        .info-field label {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .info-field .info-text {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .info-field input,
+        .info-field select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .presence-section {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .presence-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .presence-checkbox input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+        }
+
+        .presence-checkbox label {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .gps-map-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 0.1;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-gps {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-gps:hover {
+            background: #218838;
+        }
+
+        .btn-map {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-map:hover {
+            background: #138496;
+        }
+
+        /* Middle Section - スクロール可能 */
+        .middle-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: #e9ecef;
+            color: #666;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .data-input-area {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .egg-input-section,
+        .chick-input-section {
+            display: none;
+        }
+
+        .egg-input-section.active,
+        .chick-input-section.active {
+            display: block;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-field.small {
+            flex: 0 0 80px;
+        }
+
+        .input-field.medium {
+            flex: 0 0 100px;
+        }
+
+        .input-field.large {
+            flex: 1;
+        }
+
+        .input-field label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .input-field input,
+        .input-field select {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .input-field input:focus,
+        .input-field select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-field input:disabled {
+            background-color: #f0f0f0;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .input-next-wrapper {
+            position: relative;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .input-next-wrapper input {
+            flex: 1;
+        }
+
+        .next-field-btn {
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.3s;
+        }
+
+        .next-field-btn:hover {
+            background: #5568d3;
+        }
+
+        .next-field-btn:active {
+            background: #4557c2;
+        }
+
+        .egg-entry {
+            position: relative;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+
+        .egg-entry-header {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .egg-entry-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .delete-entry-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .delete-entry-btn:hover {
+            background: #c82333;
+        }
+
+        .btn-add-egg {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-add-egg:hover {
+            background: #218838;
+        }
+
+        /* Bottom Section - 固定、横スクロール */
+        .bottom-section {
+            background: #ffffff;
+            border-top: 2px solid #ddd;
+            padding: 15px 20px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .bottom-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .bottom-header h3 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .bottom-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-reorder {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-add-nest {
+            background: #28a745;
+            color: white;
+        }
+
+        .records-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            padding-bottom: 10px;
+        }
+
+        .records-container {
+            display: inline-flex;
+            gap: 15px;
+        }
+
+        .nest-card {
+            display: inline-block;
+            min-width: 180px;
+            max-width: 180px;
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .nest-card-header {
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nest-id-badge {
+            font-size: 16px;
+        }
+
+        .delete-nest-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .delete-nest-btn:hover {
+            background: #c82333;
+        }
+
+        /* Success message */
+        .success-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .success-message.show {
+            opacity: 1;
+        }
+
+        .date-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            min-height: 28px;
+        }
+
+        .date-row:last-child {
+            border-bottom: none;
+        }
+
+        .date-label {
+            font-size: 11px;
+            color: #666;
+            flex: 0 0 40px;
+            font-weight: 600;
+        }
+
+        .egg-status-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            flex: 1;
+        }
+
+        .egg-status-dot {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 3px;
+            display: block;
+        }
+
+        .egg-status-dot.normal {
+            background: #333;
+        }
+
+        .egg-status-dot.changed {
+            background: #dc3545;
+        }
+
+        .egg-status-dot.no-data {
+            background: #e9ecef;
+        }
+
+        .egg-status-dot.empty {
+            background: transparent;
+            border: 1px dashed #ddd;
+        }
+
+        .save-button-container {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 18px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-save:hover {
+            background: #5568d3;
+        }
+
+        /* Custom Number Keyboard */
+        .keyboard-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #e9ecef;
+            border-top: 2px solid #adb5bd;
+            padding: 15px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 1024px;
+            margin: 0 auto;
+        }
+
+        .keyboard-overlay.active {
+            transform: translateY(0);
+        }
+
+        .keyboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #adb5bd;
+        }
+
+        .keyboard-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .keyboard-close {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .keyboard-display {
+            background: #f8f9fa;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: right;
+            margin: 0 20px 20px 20px;
+            min-height: 60px;
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .key-btn {
+            background: white;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .key-btn:active {
+            background: #e9ecef;
+            transform: scale(0.95);
+        }
+
+        .key-btn.key-delete {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .key-btn.key-ac {
+            background: #ff9800;
+            color: white;
+            border-color: #ff9800;
+            grid-column: span 2;
+        }
+
+        .key-btn.key-ac:active {
+            background: #e68900;
+        }
+
+        .key-btn.key-next {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            font-weight: 600;
+        }
+
+        .key-btn.key-next:active {
+            background: #5568d3;
+        }
+
+        .key-btn.key-dot {
+            background: #ffc107;
+            border-color: #ffc107;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .nest-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: move;
+            border-left: 4px solid #667eea;
+        }
+
+        .nest-list-item.dragging {
+            opacity: 0.5;
+        }
+
+        .nest-id {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .nest-info-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .drag-handle {
+            font-size: 24px;
+            color: #adb5bd;
+            cursor: move;
+        }
+
+        .form-input-group {
+            margin-bottom: 15px;
+        }
+
+        .form-input-group label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn-modal-save {
+            width: 100%;
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-modal-save:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .home-header h1 {
+                font-size: 28px;
+            }
+
+            .calendar-grid {
+                gap: 5px;
+            }
+
+            .day-number {
+                font-size: 14px;
+            }
+
+            .day-count {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Screen -->
+    <div class="home-screen active" id="homeScreen">
+        <div class="home-header">
+            <h1>🐣 野外調査データ入力システム</h1>
+            <p>Field Survey Data Collection App</p>
+        </div>
+
+        <!-- Home Tabs -->
+        <div class="home-tabs">
+            <button class="home-tab-btn active" onclick="switchHomeTab('calendar')">📅 カレンダー</button>
+            <button class="home-tab-btn" onclick="switchHomeTab('sheet')">📊 シート</button>
+        </div>
+
+        <!-- Calendar Tab Content -->
+        <div class="home-tab-content active" id="calendarTabContent">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h2 class="calendar-title" id="calendarTitle">2026年5月</h2>
+                    <div class="calendar-nav">
+                        <button onclick="previousMonth()">◀ 前月</button>
+                        <button onclick="nextMonth()">次月 ▶</button>
+                        <button onclick="goToToday()">今日</button>
+                    </div>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">日</div>
+                    <div class="calendar-day-header">月</div>
+                    <div class="calendar-day-header">火</div>
+                    <div class="calendar-day-header">水</div>
+                    <div class="calendar-day-header">木</div>
+                    <div class="calendar-day-header">金</div>
+                    <div class="calendar-day-header">土</div>
+                </div>
+                <div class="calendar-days-grid" id="calendarDays"></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>クイックアクション</h2>
+                <div class="action-buttons">
+                    <button class="action-btn success" onclick="startSurvey()">📝 今日の調査を開始</button>
+                    <button class="action-btn secondary" onclick="exportData()">💾 データをエクスポート</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sheet Tab Content -->
+        <div class="home-tab-content" id="sheetTabContent">
+            <div class="nest-sheet-container">
+                <div class="sheet-header">
+                    <h2>巣情報シート</h2>
+                    <div class="sheet-actions">
+                        <button class="btn-check" onclick="checkIncompleteInput()">✓ チェック</button>
+                        <button class="btn-edit" id="btnEditSheet" onclick="toggleSheetEditMode()">✏️ 編集</button>
+                        <button class="btn-cancel-edit" id="btnCancelEdit" onclick="cancelSheetEdit()">キャンセル</button>
+                        <button class="btn-save-sheet" id="btnSaveSheet" onclick="saveSheetData()">💾 保存</button>
+                    </div>
+                </div>
+                <table class="nest-sheet-table" id="nestSheetTable">
+                    <thead>
+                        <tr>
+                            <th>並び順</th>
+                            <th>杭番号</th>
+                            <th>Male</th>
+                            <th>Mring(M)</th>
+                            <th>LT①</th>
+                            <th>LID(M)</th>
+                            <th>在</th>
+                            <th>Female</th>
+                            <th>Mring(F)</th>
+                            <th>LT②</th>
+                            <th>LID(F)</th>
+                            <th>在</th>
+                            <th>入力</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nestSheetBody">
+                        <!-- Nest data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Survey Screen -->
+    <div class="survey-screen" id="surveyScreen">
+        <!-- Top Section (Fixed) -->
+        <div class="top-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <button class="back-button" onclick="backToHome()">◀ ホームに戻る</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="back-button" onclick="gotoPreviousNest()" id="btnPrevNest">◀ 前へ</button>
+                    <button class="back-button" onclick="gotoNextNest()" id="btnNextNest">次へ ▶</button>
+                </div>
+            </div>
+
+            <div class="top-row">
+                <div class="id-display" id="nestIdDisplay">-</div>
+                <div class="stake-input">
+                    <label>杭番号:</label>
+                    <span class="info-text" id="stakeNumberDisplay">-</span>
+                </div>
+                <div class="individual-info">
+                    <div class="info-field">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="font-size: 24px; font-weight: 600;">Male:</label>
+                            <span class="info-text" id="individual1Display" style="font-size: 24px;">-</span>
+                            <input type="checkbox" id="presence1" style="margin-left: auto; width: 24px; height: 24px;" onchange="updatePresenceStatus()">
+                        </div>
+                        <div style="font-size: 20px; color: #666;">
+                            Mring: <span id="mringMDisplay">-</span>
+                        </div>
+                        <div style="font-size: 24px; color: #666;">
+                            <span id="loggerType1Display">-</span>:<span id="loggerId1Display">-</span>
+                        </div>
+                    </div>
+                    <div class="info-field">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="font-size: 24px; font-weight: 600;">Female:</label>
+                            <span class="info-text" id="individual2Display" style="font-size: 24px;">-</span>
+                            <input type="checkbox" id="presence2" style="margin-left: auto; width: 24px; height: 24px;" onchange="updatePresenceStatus()">
+                        </div>
+                        <div style="font-size: 20px; color: #666;">
+                            Mring: <span id="mringFDisplay">-</span>
+                        </div>
+                        <div style="font-size: 24px; color: #666;">
+                            <span id="loggerType2Display">-</span>:<span id="loggerId2Display">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gps-map-buttons">
+                    <button class="btn btn-gps" onclick="captureGPS()">📍 GPS</button>
+                    <button class="btn btn-map" onclick="showMap()">🗺️ 地図</button>
+                </div>
+            </div>
+
+            <div class="presence-section">
+            </div>
+        </div>
+
+        <!-- Middle Section (Scrollable) -->
+        <div class="middle-section">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchDataTab('egg')">卵</button>
+                <button class="tab-btn" onclick="switchDataTab('chick')">雛</button>
+            </div>
+
+            <div class="data-input-area">
+                <!-- Egg Input Section -->
+                <div class="egg-input-section active" id="eggInputSection">
+                    <div id="eggEntriesContainer">
+                        <!-- Egg entries will be added here dynamically -->
+                    </div>
+                    <button class="btn-add-egg" onclick="addEggEntry()">➕ 卵を追加</button>
+                </div>
+
+                <!-- Chick Input Section -->
+                <div class="chick-input-section" id="chickInputSection">
+                    <div class="input-row">
+                        <div class="input-field small">
+                            <label>雛番号</label>
+                            <input type="text" id="chickNumber" placeholder="1">
+                        </div>
+                        <div class="input-field small">
+                            <label>BM (g)</label>
+                            <input type="text" id="chickBM" placeholder="000.0">
+                        </div>
+                        <div class="input-field small">
+                            <label>HL (mm)</label>
+                            <input type="text" id="chickHL" placeholder="00.0">
+                        </div>
+                        <div class="input-field small">
+                            <label>BD (mm)</label>
+                            <input type="text" id="chickBD" placeholder="00.0">
+                        </div>
+                        <div class="input-field small">
+                            <label>TL (mm)</label>
+                            <input type="text" id="chickTL" placeholder="00.0">
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-field medium">
+                            <label>吐き戻し</label>
+                            <input type="text" id="chickRegurgitation" placeholder="内容">
+                        </div>
+                        <div class="input-field small">
+                            <label>リング色</label>
+                            <input type="text" id="ringColor" placeholder="色">
+                        </div>
+                        <div class="input-field small">
+                            <label>リング番号</label>
+                            <input type="text" id="ringNumber" placeholder="番号">
+                        </div>
+                        <div class="input-field large">
+                            <label>備考</label>
+                            <input type="text" id="chickNote" placeholder="備考">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section (Fixed, Horizontal Scroll) -->
+        <div class="bottom-section">
+            <div class="bottom-header">
+                <h3>全巣データ（過去5日分）</h3>
+                <div class="bottom-buttons">
+                    <button class="btn-small btn-reorder" onclick="openReorderModal()">並び替え</button>
+                </div>
+            </div>
+            <div class="records-scroll">
+                <div class="records-container" id="recentRecords">
+                    <!-- Nest cards will be dynamically generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="save-button-container">
+            <button class="btn-save" onclick="saveRecord()">💾 保存</button>
+        </div>
+    </div>
+
+    <!-- Custom Number Keyboard -->
+    <div class="keyboard-overlay" id="customKeyboard">
+        <div class="keyboard-header">
+            <span class="keyboard-title" id="keyboardTitle">数字入力</span>
+            <button class="keyboard-close" onclick="closeKeyboard()">閉じる</button>
+        </div>
+        <div class="keyboard-display" id="keyboardDisplay">0</div>
+        <div class="keyboard-grid">
+            <button class="key-btn" onclick="inputNumber('1')">1</button>
+            <button class="key-btn" onclick="inputNumber('2')">2</button>
+            <button class="key-btn" onclick="inputNumber('3')">3</button>
+            <button class="key-btn" onclick="inputNumber('4')">4</button>
+            <button class="key-btn" onclick="inputNumber('5')">5</button>
+            <button class="key-btn" onclick="inputNumber('6')">6</button>
+            <button class="key-btn" onclick="inputNumber('7')">7</button>
+            <button class="key-btn" onclick="inputNumber('8')">8</button>
+            <button class="key-btn" onclick="inputNumber('9')">9</button>
+            <button class="key-btn key-dot" onclick="inputNumber('.')">.</button>
+            <button class="key-btn" onclick="inputNumber('0')">0</button>
+            <button class="key-btn key-delete" onclick="deleteNumber()">⌫</button>
+            <button class="key-btn key-ac" onclick="clearInput()">AC</button>
+            <button class="key-btn key-next" onclick="keyboardNextField()">次へ</button>
+        </div>
+    </div>
+
+    <!-- Nest Reorder Modal -->
+    <div class="modal-overlay" id="reorderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">巣の並び替え</h3>
+                <button class="modal-close" onclick="closeReorderModal()">閉じる</button>
+            </div>
+            <p style="color: #666; margin-bottom: 20px;">ドラッグして順序を変更してください</p>
+            <div id="nestList"></div>
+            <button class="btn-modal-save" onclick="saveNestOrder()">順序を保存</button>
+        </div>
+    </div>
+
+    <!-- Add Nest Modal -->
+    <div class="modal-overlay" id="addNestModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新しい巣を追加</h3>
+                <button class="modal-close" onclick="closeAddNestModal()">閉じる</button>
+            </div>
+            <div class="form-input-group">
+                <label>挿入位置（このIDの後に追加されます）</label>
+                <input type="number" id="insertAfterNestId" placeholder="例: 5" min="1">
+            </div>
+            <div class="form-input-group">
+                <label>新しい巣のID（自動的に後続のIDは繰り上がります）</label>
+                <input type="number" id="newNestId" placeholder="自動計算されます" readonly>
+            </div>
+            <p style="color: #999; font-size: 14px; margin-bottom: 20px;">
+                例: ID 5の後に追加すると、新しい巣はID 6になり、元のID 6以降は7, 8...と繰り上がります
+            </p>
+            <button class="btn-modal-save" onclick="addNewNest()">巣を追加</button>
+        </div>
+    </div>
+
+    <!-- Map Modal -->
+    <div class="modal-overlay" id="mapModal">
+        <div class="modal-content" style="max-width: 90%; height: 80vh;">
+            <div class="modal-header">
+                <h3 class="modal-title">巣の位置</h3>
+                <button class="modal-close" onclick="closeMapModal()">閉じる</button>
+            </div>
+            <div id="map" style="width: 100%; height: calc(100% - 60px); border-radius: 8px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let db;
+        let currentNestId = null;
+        let currentTab = 'egg';
+        let activeInputField = null;
+        let nestOrder = [];
+        let draggedElement = null;
+        let eggEntryCounter = 0;
+        let currentDate = new Date();
+        let currentScreen = 'home';
+        let currentSurveyDate = null;
+        let sheetEditMode = false;
+        let sheetDataBackup = [];
+        let todayInputStatus = {}; // 今日の入力状態を保存 { nestId: true/false }
+        let todayPresenceStatus = {}; // 今日の在不在状態を保存 { nestId: { presence1: true/false, presence2: true/false } }
+        let currentNestOrderIndex = 0; // 現在の巣の並び順インデックス
+        let hasUnsavedChanges = false; // 未保存の変更があるかどうか
+        let map; // Google Map instance
+        let markers = []; // Array to store map markers
+
+        // Initialize IndexedDB
+        function initDB() {
+            const request = indexedDB.open('FieldSurveyDB', 2);
+
+            request.onerror = () => {
+                console.error('Failed to open database');
+                alert('データベースの初期化に失敗しました');
+            };
+
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                console.log('Database opened successfully');
+                initializeNestOrder();
+                renderCalendar();
+            };
+
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+
+                if (!db.objectStoreNames.contains('nests')) {
+                    const nestStore = db.createObjectStore('nests', { keyPath: 'nestId' });
+                    nestStore.createIndex('stakeNumber', 'stakeNumber', { unique: false });
+                }
+
+                if (!db.objectStoreNames.contains('observations')) {
+                    const obsStore = db.createObjectStore('observations', { keyPath: 'id', autoIncrement: true });
+                    obsStore.createIndex('nestId', 'nestId', { unique: false });
+                    obsStore.createIndex('surveyDate', 'surveyDate', { unique: false });
+                    obsStore.createIndex('nestId_surveyDate', ['nestId', 'surveyDate'], { unique: false });
+                }
+
+                if (!db.objectStoreNames.contains('settings')) {
+                    const settingsStore = db.createObjectStore('settings', { keyPath: 'key' });
+                }
+            };
+        }
+
+        // ========== INPUT STATUS MANAGEMENT ==========
+        // Load today's input status from localStorage
+        function loadTodayInputStatus() {
+            const today = new Date().toISOString().split('T')[0];
+            const stored = localStorage.getItem('inputStatus');
+
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    // Check if the stored data is for today
+                    if (data.date === today) {
+                        todayInputStatus = data.status || {};
+                    } else {
+                        // Different day - reset
+                        todayInputStatus = {};
+                        saveTodayInputStatus();
+                    }
+                } catch (e) {
+                    todayInputStatus = {};
+                }
+            } else {
+                todayInputStatus = {};
+            }
+        }
+
+        // Save today's input status to localStorage
+        function saveTodayInputStatus() {
+            const today = new Date().toISOString().split('T')[0];
+            const data = {
+                date: today,
+                status: todayInputStatus
+            };
+            localStorage.setItem('inputStatus', JSON.stringify(data));
+        }
+
+        // Toggle input status for a nest
+        function toggleInputStatus(nestId) {
+            todayInputStatus[nestId] = !todayInputStatus[nestId];
+            saveTodayInputStatus();
+            loadNestSheet(sheetEditMode);
+        }
+
+        // Mark nest as completed after saving
+        function markNestAsCompleted(nestId) {
+            todayInputStatus[nestId] = true;
+            saveTodayInputStatus();
+            loadNestSheet(sheetEditMode);
+        }
+
+        // Ask user if they want to move to the next nest
+        function askToMoveToNextNest() {
+            // Check if there is a next nest
+            if (currentNestOrderIndex < nestOrder.length - 1) {
+                const moveToNext = confirm('保存しました。次の巣へ移動しますか？');
+                if (moveToNext) {
+                    gotoNextNest();
+                }
+            } else {
+                // This is the last nest
+                alert('保存しました。これが最後の巣です。');
+            }
+        }
+
+        // Load today's presence status from localStorage
+        function loadTodayPresenceStatus() {
+            const today = new Date().toISOString().split('T')[0];
+            const stored = localStorage.getItem('presenceStatus');
+
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    // Check if the stored data is for today
+                    if (data.date === today) {
+                        todayPresenceStatus = data.status || {};
+                    } else {
+                        // Different day - reset
+                        todayPresenceStatus = {};
+                        saveTodayPresenceStatus();
+                    }
+                } catch (e) {
+                    todayPresenceStatus = {};
+                }
+            } else {
+                todayPresenceStatus = {};
+            }
+        }
+
+        // Save today's presence status to localStorage
+        function saveTodayPresenceStatus() {
+            const today = new Date().toISOString().split('T')[0];
+            const data = {
+                date: today,
+                status: todayPresenceStatus
+            };
+            localStorage.setItem('presenceStatus', JSON.stringify(data));
+        }
+
+        // Toggle presence status for a nest
+        function togglePresence1(nestId) {
+            if (!todayPresenceStatus[nestId]) {
+                todayPresenceStatus[nestId] = { presence1: false, presence2: false };
+            }
+            todayPresenceStatus[nestId].presence1 = !todayPresenceStatus[nestId].presence1;
+            saveTodayPresenceStatus();
+            loadNestSheet(sheetEditMode);
+        }
+
+        function togglePresence2(nestId) {
+            if (!todayPresenceStatus[nestId]) {
+                todayPresenceStatus[nestId] = { presence1: false, presence2: false };
+            }
+            todayPresenceStatus[nestId].presence2 = !todayPresenceStatus[nestId].presence2;
+            saveTodayPresenceStatus();
+            loadNestSheet(sheetEditMode);
+        }
+
+        // Update presence status from survey screen checkboxes
+        function updatePresenceStatus() {
+            if (!currentNestId) return;
+
+            const presence1 = document.getElementById('presence1').checked;
+            const presence2 = document.getElementById('presence2').checked;
+
+            if (!todayPresenceStatus[currentNestId]) {
+                todayPresenceStatus[currentNestId] = { presence1: false, presence2: false };
+            }
+
+            todayPresenceStatus[currentNestId].presence1 = presence1;
+            todayPresenceStatus[currentNestId].presence2 = presence2;
+
+            saveTodayPresenceStatus();
+            loadNestSheet(sheetEditMode);
+
+            console.log(`Updated presence status for nest ${currentNestId}: ①${presence1}, ②${presence2}`);
+        }
+
+        // Load presence checkboxes state for the current nest
+        function loadPresenceCheckboxes(nestId) {
+            const presence1 = todayPresenceStatus[nestId]?.presence1 || false;
+            const presence2 = todayPresenceStatus[nestId]?.presence2 || false;
+
+            document.getElementById('presence1').checked = presence1;
+            document.getElementById('presence2').checked = presence2;
+
+            console.log(`Loaded presence status for nest ${nestId}: ①${presence1}, ②${presence2}`);
+        }
+
+        // ========== SCREEN NAVIGATION ==========
+        function showHomeScreen() {
+            document.getElementById('homeScreen').classList.add('active');
+            document.getElementById('surveyScreen').classList.remove('active');
+            currentScreen = 'home';
+            renderCalendar();
+        }
+
+        // Switch home tabs (calendar/sheet)
+        function switchHomeTab(tabName) {
+            // Update tab buttons
+            const tabButtons = document.querySelectorAll('.home-tab-btn');
+            tabButtons.forEach(btn => {
+                if ((tabName === 'calendar' && btn.textContent.includes('カレンダー')) ||
+                    (tabName === 'sheet' && btn.textContent.includes('シート'))) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Update tab content
+            if (tabName === 'calendar') {
+                document.getElementById('calendarTabContent').classList.add('active');
+                document.getElementById('sheetTabContent').classList.remove('active');
+            } else if (tabName === 'sheet') {
+                document.getElementById('calendarTabContent').classList.remove('active');
+                document.getElementById('sheetTabContent').classList.add('active');
+                loadNestSheet(); // Load nest data when switching to sheet view
+            }
+        }
+
+        // Load nest sheet data
+        function loadNestSheet(editMode = false) {
+            if (!db) {
+                const tbody = document.getElementById('nestSheetBody');
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #999;">データベースを初期化中...</td></tr>';
+                return;
+            }
+
+            const transaction = db.transaction(['nests'], 'readonly');
+            const nestStore = transaction.objectStore('nests');
+            const request = nestStore.getAll();
+
+            request.onsuccess = (event) => {
+                const allNests = event.target.result;
+
+                // Create a map of nestId to nest data
+                const nestDataMap = {};
+                allNests.forEach(nest => {
+                    nestDataMap[nest.nestId] = nest;
+                });
+
+                // Store backup if entering edit mode
+                if (editMode) {
+                    sheetDataBackup = JSON.parse(JSON.stringify(nestDataMap));
+                }
+
+                // Render table rows based on nestOrder
+                const tbody = document.getElementById('nestSheetBody');
+                let html = '';
+
+                nestOrder.forEach((nestId, index) => {
+                    const nestData = nestDataMap[nestId] || {};
+                    const order = index + 1;
+                    const stakeNumber = nestData.stakeNumber || '';
+                    const individual1 = nestData.individual1 || '';
+                    const mringM = nestData.mringM || '';
+                    const loggerType1 = nestData.loggerType1 || '';
+                    const loggerId1 = nestData.loggerId1 || '';
+                    const individual2 = nestData.individual2 || '';
+                    const mringF = nestData.mringF || '';
+                    const loggerType2 = nestData.loggerType2 || '';
+                    const loggerId2 = nestData.loggerId2 || '';
+                    const isInputDone = todayInputStatus[nestId] || false;
+                    const presence1 = todayPresenceStatus[nestId]?.presence1 || false;
+                    const presence2 = todayPresenceStatus[nestId]?.presence2 || false;
+
+                    if (editMode) {
+                        // Edit mode: render input fields (input and presence columns not editable in edit mode)
+                        html += `
+                            <tr data-nest-id="${nestId}" class="draggable" draggable="true">
+                                <td>${order}</td>
+                                <td><input type="text" value="${stakeNumber}" data-field="stakeNumber" /></td>
+                                <td><input type="text" value="${individual1}" data-field="individual1" /></td>
+                                <td><input type="text" value="${mringM}" data-field="mringM" /></td>
+                                <td><input type="text" value="${loggerType1}" data-field="loggerType1" /></td>
+                                <td><input type="text" value="${loggerId1}" data-field="loggerId1" /></td>
+                                <td>
+                                    <input type="checkbox" ${presence1 ? 'checked' : ''} onclick="togglePresence1(${nestId})" />
+                                </td>
+                                <td><input type="text" value="${individual2}" data-field="individual2" /></td>
+                                <td><input type="text" value="${mringF}" data-field="mringF" /></td>
+                                <td><input type="text" value="${loggerType2}" data-field="loggerType2" /></td>
+                                <td><input type="text" value="${loggerId2}" data-field="loggerId2" /></td>
+                                <td>
+                                    <input type="checkbox" ${presence2 ? 'checked' : ''} onclick="togglePresence2(${nestId})" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" ${isInputDone ? 'checked' : ''} onclick="toggleInputStatus(${nestId})" />
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        // View mode: render text
+                        html += `
+                            <tr>
+                                <td>${order}</td>
+                                <td>${stakeNumber || '-'}</td>
+                                <td>${individual1 || '-'}</td>
+                                <td>${mringM || '-'}</td>
+                                <td>${loggerType1 || '-'}</td>
+                                <td>${loggerId1 || '-'}</td>
+                                <td>
+                                    <input type="checkbox" ${presence1 ? 'checked' : ''} onclick="togglePresence1(${nestId})" />
+                                </td>
+                                <td>${individual2 || '-'}</td>
+                                <td>${mringF || '-'}</td>
+                                <td>${loggerType2 || '-'}</td>
+                                <td>${loggerId2 || '-'}</td>
+                                <td>
+                                    <input type="checkbox" ${presence2 ? 'checked' : ''} onclick="togglePresence2(${nestId})" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" ${isInputDone ? 'checked' : ''} onclick="toggleInputStatus(${nestId})" />
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                if (nestOrder.length === 0) {
+                    html = '<tr><td colspan="13" style="text-align: center; color: #999;">巣データがありません</td></tr>';
+                }
+
+                tbody.innerHTML = html;
+
+                // Attach drag and drop event listeners in edit mode
+                if (editMode) {
+                    attachSheetDragListeners();
+                }
+            };
+
+            request.onerror = () => {
+                console.error('Failed to load nest sheet');
+                const tbody = document.getElementById('nestSheetBody');
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #dc3545;">データの読み込みに失敗しました</td></tr>';
+            };
+        }
+
+        // Attach drag and drop listeners to sheet rows
+        let draggedSheetRow = null;
+
+        function attachSheetDragListeners() {
+            const rows = document.querySelectorAll('.nest-sheet-table tbody tr.draggable');
+
+            rows.forEach(row => {
+                row.addEventListener('dragstart', function(e) {
+                    draggedSheetRow = this;
+                    this.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', this.innerHTML);
+                });
+
+                row.addEventListener('dragend', function(e) {
+                    this.classList.remove('dragging');
+                    // Remove all drag-over classes
+                    document.querySelectorAll('.nest-sheet-table tbody tr').forEach(r => {
+                        r.classList.remove('drag-over');
+                    });
+                });
+
+                row.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+
+                    if (draggedSheetRow !== this) {
+                        this.classList.add('drag-over');
+                    }
+                    return false;
+                });
+
+                row.addEventListener('dragleave', function(e) {
+                    this.classList.remove('drag-over');
+                });
+
+                row.addEventListener('drop', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    if (draggedSheetRow !== this) {
+                        // Get nest IDs
+                        const draggedNestId = parseInt(draggedSheetRow.getAttribute('data-nest-id'));
+                        const targetNestId = parseInt(this.getAttribute('data-nest-id'));
+
+                        // Update nestOrder array
+                        const draggedIndex = nestOrder.indexOf(draggedNestId);
+                        const targetIndex = nestOrder.indexOf(targetNestId);
+
+                        // Remove from old position
+                        nestOrder.splice(draggedIndex, 1);
+                        // Insert at new position
+                        nestOrder.splice(targetIndex, 0, draggedNestId);
+
+                        // Reload the sheet to reflect new order
+                        loadNestSheet(true);
+                    }
+
+                    this.classList.remove('drag-over');
+                    return false;
+                });
+            });
+        }
+
+        // Toggle sheet edit mode
+        function toggleSheetEditMode() {
+            sheetEditMode = !sheetEditMode;
+
+            if (sheetEditMode) {
+                // Enter edit mode
+                document.getElementById('btnEditSheet').style.display = 'none';
+                document.getElementById('btnCancelEdit').classList.add('active');
+                document.getElementById('btnSaveSheet').classList.add('active');
+                loadNestSheet(true);
+            } else {
+                // Exit edit mode
+                document.getElementById('btnEditSheet').style.display = 'block';
+                document.getElementById('btnCancelEdit').classList.remove('active');
+                document.getElementById('btnSaveSheet').classList.remove('active');
+                loadNestSheet(false);
+            }
+        }
+
+        // Cancel sheet edit
+        function cancelSheetEdit() {
+            if (confirm('編集内容を破棄しますか？')) {
+                sheetEditMode = false;
+                document.getElementById('btnEditSheet').style.display = 'block';
+                document.getElementById('btnCancelEdit').classList.remove('active');
+                document.getElementById('btnSaveSheet').classList.remove('active');
+                loadNestSheet(false);
+            }
+        }
+
+        // Check incomplete input
+        function checkIncompleteInput() {
+            if (!db) {
+                showErrorMessage('データベースが初期化されていません');
+                return;
+            }
+
+            const transaction = db.transaction(['nests'], 'readonly');
+            const nestStore = transaction.objectStore('nests');
+            const request = nestStore.getAll();
+
+            request.onsuccess = (event) => {
+                const allNests = event.target.result;
+                const nestDataMap = {};
+                allNests.forEach(nest => {
+                    nestDataMap[nest.nestId] = nest;
+                });
+
+                // Find nests without input check
+                const incompleteNests = [];
+                nestOrder.forEach(nestId => {
+                    const isInputDone = todayInputStatus[nestId] || false;
+                    if (!isInputDone) {
+                        const nestData = nestDataMap[nestId] || {};
+                        const stakeNumber = nestData.stakeNumber || `巣${nestId}`;
+                        incompleteNests.push(stakeNumber);
+                    }
+                });
+
+                if (incompleteNests.length === 0) {
+                    showSuccessMessage('すべての巣の入力が完了しています！');
+                } else {
+                    const message = incompleteNests.join('、') + 'の入力が完了していません。';
+                    showErrorMessage(message);
+                }
+            };
+
+            request.onerror = () => {
+                showErrorMessage('チェックに失敗しました');
+            };
+        }
+
+        // Save sheet data
+        function saveSheetData() {
+            if (!db) {
+                showErrorMessage('データベースが初期化されていません');
+                return;
+            }
+
+            const tbody = document.getElementById('nestSheetBody');
+            const rows = tbody.querySelectorAll('tr[data-nest-id]');
+
+            const transaction = db.transaction(['nests'], 'readwrite');
+            const nestStore = transaction.objectStore('nests');
+            let savedCount = 0;
+            let totalRows = rows.length;
+
+            rows.forEach(row => {
+                const nestId = parseInt(row.getAttribute('data-nest-id'));
+                const stakeNumber = row.querySelector('[data-field="stakeNumber"]').value;
+                const individual1 = row.querySelector('[data-field="individual1"]').value;
+                const mringM = row.querySelector('[data-field="mringM"]').value;
+                const loggerType1 = row.querySelector('[data-field="loggerType1"]').value;
+                const loggerId1 = row.querySelector('[data-field="loggerId1"]').value;
+                const individual2 = row.querySelector('[data-field="individual2"]').value;
+                const mringF = row.querySelector('[data-field="mringF"]').value;
+                const loggerType2 = row.querySelector('[data-field="loggerType2"]').value;
+                const loggerId2 = row.querySelector('[data-field="loggerId2"]').value;
+
+                const nestData = {
+                    nestId: nestId,
+                    stakeNumber: stakeNumber,
+                    individual1: individual1,
+                    mringM: mringM,
+                    loggerType1: loggerType1,
+                    loggerId1: loggerId1,
+                    individual2: individual2,
+                    mringF: mringF,
+                    loggerType2: loggerType2,
+                    loggerId2: loggerId2,
+                    updatedAt: new Date().toISOString()
+                };
+
+                const request = nestStore.put(nestData);
+                request.onsuccess = () => {
+                    savedCount++;
+                    if (savedCount === totalRows) {
+                        // Save nest order to settings
+                        saveNestOrder();
+                        showSuccessMessage('シートデータを保存しました！');
+                        sheetEditMode = false;
+                        document.getElementById('btnEditSheet').style.display = 'block';
+                        document.getElementById('btnCancelEdit').classList.remove('active');
+                        document.getElementById('btnSaveSheet').classList.remove('active');
+                        loadNestSheet(false);
+                    }
+                };
+            });
+
+            transaction.onerror = () => {
+                showErrorMessage('保存に失敗しました');
+            };
+        }
+
+        function showSurveyScreen(date) {
+            document.getElementById('homeScreen').classList.remove('active');
+            document.getElementById('surveyScreen').classList.add('active');
+            currentScreen = 'survey';
+            currentSurveyDate = date;
+
+            // Start from first nest in order
+            currentNestOrderIndex = 0;
+
+            // Reset unsaved changes flag
+            hasUnsavedChanges = false;
+
+            // Setup input change detection
+            setupInputChangeDetection();
+
+            // Load nests from previous day first, then load first nest
+            loadNestsFromPreviousDay(date);
+        }
+
+        let inputChangeDetectionSetup = false;
+
+        function setupInputChangeDetection() {
+            // Only setup once
+            if (inputChangeDetectionSetup) return;
+            inputChangeDetectionSetup = true;
+
+            // Use event delegation for all inputs and changes in the survey screen
+            document.addEventListener('input', function(e) {
+                if (currentScreen === 'survey' && e.target.closest('#surveyScreen')) {
+                    console.log('Input detected, setting hasUnsavedChanges to true');
+                    hasUnsavedChanges = true;
+                }
+            }, true);
+
+            document.addEventListener('change', function(e) {
+                if (currentScreen === 'survey' && e.target.closest('#surveyScreen')) {
+                    console.log('Change detected, setting hasUnsavedChanges to true');
+                    hasUnsavedChanges = true;
+                }
+            }, true);
+
+            console.log('Input change detection setup complete');
+        }
+
+        // Load nests based on sheet order
+        function loadNestsFromPreviousDay(surveyDate) {
+            if (!db) {
+                loadNestRecords();
+                return;
+            }
+
+            // Load nest records first
+            loadNestRecords();
+
+            // Auto-select the first nest in sheet order
+            setTimeout(() => {
+                if (nestOrder.length > 0) {
+                    currentNestOrderIndex = 0;
+                    const firstNestId = nestOrder[0];
+                    selectNest(firstNestId, true); // Skip jump message on initial load
+                }
+            }, 100);
+        }
+
+        function backToHome() {
+            showHomeScreen();
+        }
+
+        function startSurvey() {
+            const today = new Date().toISOString().split('T')[0];
+            showSurveyScreen(today);
+        }
+
+        function selectDate(dateStr) {
+            console.log('Selected date:', dateStr);
+            showSurveyScreen(dateStr);
+        }
+
+        // ========== CALENDAR FUNCTIONS ==========
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            document.getElementById('calendarTitle').textContent = `${year}年${month + 1}月`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+            const container = document.getElementById('calendarDays');
+            let html = '';
+
+            for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                const day = prevMonthLastDay - i;
+                html += `<div class="calendar-day other-month">
+                    <div class="day-number">${day}</div>
+                </div>`;
+            }
+
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = isCurrentMonth && today.getDate() === day;
+                const classes = ['calendar-day'];
+
+                if (isToday) classes.push('today');
+
+                html += `<div class="${classes.join(' ')}" onclick="selectDate('${dateStr}')" data-date="${dateStr}">
+                    <div class="day-number">${day}</div>
+                    <div class="day-count" id="count-${dateStr}">-</div>
+                </div>`;
+            }
+
+            const totalCells = startingDayOfWeek + daysInMonth;
+            const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
+            for (let day = 1; day <= remainingCells; day++) {
+                html += `<div class="calendar-day other-month">
+                    <div class="day-number">${day}</div>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+            loadObservationCounts(year, month);
+        }
+
+        function loadObservationCounts(year, month) {
+            if (!db) return;
+
+            const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+            const endDate = `${year}-${String(month + 1).padStart(2, '0')}-31\uffff`;
+
+            const transaction = db.transaction(['observations'], 'readonly');
+            const obsStore = transaction.objectStore('observations');
+            const obsIndex = obsStore.index('surveyDate');
+            const range = IDBKeyRange.bound(startDate, endDate);
+
+            const dateCounts = {};
+
+            const request = obsIndex.openCursor(range);
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const obs = cursor.value;
+                    if (!dateCounts[obs.surveyDate]) {
+                        dateCounts[obs.surveyDate] = 0;
+                    }
+                    dateCounts[obs.surveyDate]++;
+                    cursor.continue();
+                } else {
+                    Object.keys(dateCounts).forEach(dateStr => {
+                        const countEl = document.getElementById(`count-${dateStr}`);
+                        if (countEl) {
+                            countEl.textContent = `${dateCounts[dateStr]}件`;
+                            const dayEl = countEl.closest('.calendar-day');
+                            if (dayEl) {
+                                dayEl.classList.add('has-data');
+                            }
+                        }
+                    });
+                }
+            };
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentDate = new Date();
+            renderCalendar();
+        }
+
+        function exportData() {
+            if (!db) {
+                alert('データベースが初期化されていません');
+                return;
+            }
+
+            const transaction = db.transaction(['observations'], 'readonly');
+            const obsStore = transaction.objectStore('observations');
+            const request = obsStore.getAll();
+
+            request.onsuccess = (event) => {
+                const data = event.target.result;
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `survey-data-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert('データをエクスポートしました！');
+            };
+
+            request.onerror = () => {
+                alert('エクスポートに失敗しました');
+            };
+        }
+
+        // ========== NEST ORDER FUNCTIONS ==========
+        function initializeNestOrder() {
+            // Create array from 1 to 130
+            const defaultNestOrder = Array.from({ length: 130 }, (_, i) => i + 1);
+
+            if (!db) {
+                nestOrder = defaultNestOrder;
+                return;
+            }
+
+            const transaction = db.transaction(['settings'], 'readonly');
+            const settingsStore = transaction.objectStore('settings');
+            const request = settingsStore.get('nestOrder');
+
+            request.onsuccess = (event) => {
+                const result = event.target.result;
+                if (result && result.value) {
+                    nestOrder = result.value;
+                } else {
+                    nestOrder = defaultNestOrder;
+                }
+            };
+
+            request.onerror = () => {
+                console.error('Failed to load nest order');
+                nestOrder = defaultNestOrder;
+            };
+        }
+
+        function loadNestRecords() {
+            const container = document.getElementById('recentRecords');
+
+            if (!db) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">データベースを初期化中...</p>';
+                return;
+            }
+
+            // Use currentSurveyDate as the base date
+            const baseDate = currentSurveyDate ? new Date(currentSurveyDate) : new Date();
+            const dates = [];
+            const dateStrings = [];
+            for (let i = 4; i >= 0; i--) {
+                const d = new Date(baseDate);
+                d.setDate(d.getDate() - i);
+                dates.push(d);
+                dateStrings.push(d.toISOString().split('T')[0]);
+            }
+
+            // First, load all nests data
+            const nestsTransaction = db.transaction(['nests'], 'readonly');
+            const nestsStore = nestsTransaction.objectStore('nests');
+            const nestsRequest = nestsStore.getAll();
+
+            nestsRequest.onsuccess = (event) => {
+                const allNests = event.target.result;
+                const nestsMap = {};
+                allNests.forEach(nest => {
+                    nestsMap[nest.nestId] = nest;
+                });
+
+                // Then load observations
+                const transaction = db.transaction(['observations'], 'readonly');
+                const obsStore = transaction.objectStore('observations');
+                const obsIndex = obsStore.index('surveyDate');
+
+                const allObservations = [];
+                const startDate = dateStrings[0];
+                const endDate = dateStrings[dateStrings.length - 1] + '\uffff';
+                const range = IDBKeyRange.bound(startDate, endDate);
+                const request = obsIndex.openCursor(range);
+
+                request.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        allObservations.push(cursor.value);
+                        cursor.continue();
+                    } else {
+                        renderNestCards(dates, allObservations, nestsMap);
+                    }
+                };
+
+                request.onerror = () => {
+                    console.error('Failed to load observations');
+                    container.innerHTML = '<p style="text-align: center; color: #dc3545;">データの読み込みに失敗しました</p>';
+                };
+            };
+
+            nestsRequest.onerror = () => {
+                console.error('Failed to load nests');
+                container.innerHTML = '<p style="text-align: center; color: #dc3545;">巣データの読み込みに失敗しました</p>';
+            };
+        }
+
+        function renderNestCards(dates, observations, nestsMap) {
+            const container = document.getElementById('recentRecords');
+            let html = '';
+
+            nestOrder.forEach(nestId => {
+                const nestData = nestsMap[nestId] || {};
+                const stakeNumber = nestData.stakeNumber || 'X';
+
+                html += `<div class="nest-card" id="nest-card-${nestId}">`;
+                html += `<div class="nest-card-header">`;
+                html += `<div class="nest-id-badge" onclick="selectNest(${nestId})" style="cursor: pointer; flex: 1;">杭番号: ${stakeNumber}</div>`;
+                html += `<button class="delete-nest-btn" onclick="event.stopPropagation(); deleteNestData(${nestId})" title="この巣のデータを削除">🗑️</button>`;
+                html += `</div>`;
+                html += `<div onclick="selectNest(${nestId})" style="cursor: pointer;">`;
+
+                dates.forEach((date) => {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const monthDay = `${date.getMonth() + 1}/${date.getDate()}`;
+
+                    const obs = observations.find(o => o.nestId === nestId && o.surveyDate === dateStr);
+
+                    html += `<div class="date-row">`;
+                    html += `<div class="date-label">${monthDay}</div>`;
+                    html += `<div class="egg-status-grid">`;
+
+                    // Always show 5 slots
+                    const maxEggs = 5;
+                    let eggCount = 0;
+
+                    if (obs && obs.eggs && obs.eggs.length > 0) {
+                        obs.eggs.forEach((egg, idx) => {
+                            if (idx < maxEggs) {
+                                let statusClass = 'normal';
+                                let titleText = `卵${egg.eggNumber}: 正常`;
+
+                                if (egg.status && egg.status !== '正常') {
+                                    statusClass = 'changed';
+                                    titleText = `卵${egg.eggNumber}: ${egg.status}`;
+                                }
+
+                                html += `<div class="egg-status-dot ${statusClass}" title="${titleText}"></div>`;
+                                eggCount++;
+                            }
+                        });
+                    }
+
+                    // Fill remaining slots with empty placeholders
+                    for (let i = eggCount; i < maxEggs; i++) {
+                        if (obs && obs.eggs && obs.eggs.length > 0) {
+                            // Has data but less than 5 eggs
+                            html += `<div class="egg-status-dot empty" title=""></div>`;
+                        } else {
+                            // No data for this date - show as no-data only in first slot
+                            if (i === 0) {
+                                html += `<div class="egg-status-dot no-data" title="データなし"></div>`;
+                            } else {
+                                html += `<div class="egg-status-dot empty" title=""></div>`;
+                            }
+                        }
+                    }
+
+                    html += `</div>`;
+                    html += `</div>`;
+                });
+
+                html += `</div>`; // Close clickable div
+                html += `</div>`; // Close nest-card
+            });
+
+            if (nestOrder.length === 0) {
+                html = '<p style="text-align: center; color: #999; padding: 40px;">巣データがありません</p>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function selectNest(nestId, skipJumpMessage = false) {
+            console.log('selectNest called:', { nestId, currentScreen, hasUnsavedChanges, currentNestId });
+
+            // Check if switching to a different nest with unsaved changes
+            if (hasUnsavedChanges && currentNestId !== null && currentNestId !== nestId) {
+                console.log('Showing unsaved changes confirmation');
+                if (!confirm('保存していませんが、他の巣への入力を行いますか？')) {
+                    return;
+                }
+            }
+
+            // Determine if we should show jump message (when switching to a different nest)
+            const shouldShowJumpMessage = !skipJumpMessage && currentNestId !== null && currentNestId !== nestId;
+
+            currentNestId = nestId;
+
+            // Update current nest order index
+            const nestIndex = nestOrder.indexOf(nestId);
+            if (nestIndex !== -1) {
+                currentNestOrderIndex = nestIndex;
+            }
+
+            // If called from home screen, switch to survey screen
+            if (currentScreen === 'home') {
+                // Use today's date if no survey date is set
+                const dateToUse = currentSurveyDate || new Date().toISOString().split('T')[0];
+                showSurveyScreen(dateToUse);
+                // The showSurveyScreen will call loadNestsFromPreviousDay which will eventually call selectNest again
+                // So we need to prevent infinite loop by checking currentScreen
+                return;
+            }
+
+            // Display order position (1-based) instead of nest ID
+            const displayOrder = currentNestOrderIndex + 1;
+            document.getElementById('nestIdDisplay').textContent = `並び順: ${displayOrder}`;
+            console.log(`Selected nest ${nestId}`);
+
+            // Update button states
+            updateNavigationButtons();
+
+            // Load nest information (individuals and stake number) with jump message if applicable
+            loadNestInfo(nestId, shouldShowJumpMessage);
+
+            // Load presence status for this nest
+            loadPresenceCheckboxes(nestId);
+
+            // Load previous day's data for this nest
+            loadPreviousDayData(nestId);
+
+            // Reset unsaved changes flag when switching nests
+            hasUnsavedChanges = false;
+        }
+
+        // Navigate to next nest
+        function gotoNextNest() {
+            if (hasUnsavedChanges) {
+                if (!confirm('保存していませんが、他の巣への入力を行いますか？')) {
+                    return;
+                }
+            }
+            if (currentNestOrderIndex < nestOrder.length - 1) {
+                currentNestOrderIndex++;
+                const nextNestId = nestOrder[currentNestOrderIndex];
+                selectNest(nextNestId);
+            }
+        }
+
+        // Navigate to previous nest
+        function gotoPreviousNest() {
+            if (hasUnsavedChanges) {
+                if (!confirm('保存していませんが、他の巣への入力を行いますか？')) {
+                    return;
+                }
+            }
+            if (currentNestOrderIndex > 0) {
+                currentNestOrderIndex--;
+                const prevNestId = nestOrder[currentNestOrderIndex];
+                selectNest(prevNestId);
+            }
+        }
+
+        // Update navigation button states
+        function updateNavigationButtons() {
+            const btnPrev = document.getElementById('btnPrevNest');
+            const btnNext = document.getElementById('btnNextNest');
+
+            if (btnPrev) {
+                btnPrev.disabled = currentNestOrderIndex === 0;
+                btnPrev.style.opacity = currentNestOrderIndex === 0 ? '0.5' : '1';
+            }
+
+            if (btnNext) {
+                btnNext.disabled = currentNestOrderIndex === nestOrder.length - 1;
+                btnNext.style.opacity = currentNestOrderIndex === nestOrder.length - 1 ? '0.5' : '1';
+            }
+        }
+
+        // Load nest information (stake number and individuals)
+        function loadNestInfo(nestId, showJumpMessage = false) {
+            if (!db) return;
+
+            const transaction = db.transaction(['nests'], 'readonly');
+            const nestStore = transaction.objectStore('nests');
+            const request = nestStore.get(nestId);
+
+            request.onsuccess = (event) => {
+                const nestData = event.target.result;
+
+                if (nestData) {
+                    // Display stake number (read-only)
+                    document.getElementById('stakeNumberDisplay').textContent = nestData.stakeNumber || '-';
+
+                    // Display individual info (read-only)
+                    document.getElementById('individual1Display').textContent = nestData.individual1 || '-';
+                    document.getElementById('mringMDisplay').textContent = nestData.mringM || '-';
+                    document.getElementById('loggerType1Display').textContent = nestData.loggerType1 || '-';
+                    document.getElementById('loggerId1Display').textContent = nestData.loggerId1 || '-';
+
+                    document.getElementById('individual2Display').textContent = nestData.individual2 || '-';
+                    document.getElementById('mringFDisplay').textContent = nestData.mringF || '-';
+                    document.getElementById('loggerType2Display').textContent = nestData.loggerType2 || '-';
+                    document.getElementById('loggerId2Display').textContent = nestData.loggerId2 || '-';
+
+                    console.log(`Loaded nest info for nest ${nestId}`);
+
+                    // Show jump message if requested
+                    if (showJumpMessage) {
+                        const stakeNumber = nestData.stakeNumber || 'X';
+                        showSuccessMessage(`杭番号${stakeNumber}にジャンプしました`);
+                    }
+                } else {
+                    // Clear fields if no nest data exists
+                    document.getElementById('stakeNumberDisplay').textContent = '-';
+                    document.getElementById('individual1Display').textContent = '-';
+                    document.getElementById('mringMDisplay').textContent = '-';
+                    document.getElementById('loggerType1Display').textContent = '-';
+                    document.getElementById('loggerId1Display').textContent = '-';
+                    document.getElementById('individual2Display').textContent = '-';
+                    document.getElementById('mringFDisplay').textContent = '-';
+                    document.getElementById('loggerType2Display').textContent = '-';
+                    document.getElementById('loggerId2Display').textContent = '-';
+                }
+            };
+
+            request.onerror = () => {
+                console.error('Failed to load nest info');
+            };
+        }
+
+        // Save nest information - no longer needed as all fields are read-only in survey screen
+        function saveNestInfo(nestId) {
+            // This function is now a no-op since stake number is read-only in survey screen
+            // Nest info (stake number, individuals) can only be edited from the sheet
+            console.log(`saveNestInfo called for nest ${nestId} - no action taken (read-only in survey screen)`);
+        }
+
+        function deleteNestData(nestId) {
+            if (confirm(`巣 ID: ${nestId} の全データを削除しますか？\nこの操作は取り消せません。`)) {
+                if (!db) {
+                    alert('データベースが初期化されていません');
+                    return;
+                }
+
+                const transaction = db.transaction(['observations'], 'readwrite');
+                const obsStore = transaction.objectStore('observations');
+                const obsIndex = obsStore.index('nestId');
+                const request = obsIndex.openCursor(IDBKeyRange.only(nestId));
+
+                const deletedCount = { count: 0 };
+
+                request.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        cursor.delete();
+                        deletedCount.count++;
+                        cursor.continue();
+                    } else {
+                        if (deletedCount.count > 0) {
+                            alert(`巣 ID: ${nestId} の ${deletedCount.count} 件のデータを削除しました`);
+                        } else {
+                            alert(`巣 ID: ${nestId} にはデータがありませんでした`);
+                        }
+                        loadNestRecords();
+                    }
+                };
+
+                request.onerror = () => {
+                    alert('削除に失敗しました');
+                };
+            }
+        }
+
+        // Load previous day's egg data and populate input fields
+        function loadPreviousDayData(nestId) {
+            if (!db || !currentSurveyDate) return;
+
+            const transaction = db.transaction(['observations'], 'readonly');
+            const obsStore = transaction.objectStore('observations');
+            const index = obsStore.index('nestId_surveyDate');
+
+            // First, check if there's data for the current survey date
+            const currentRequest = index.get([nestId, currentSurveyDate]);
+
+            currentRequest.onsuccess = (event) => {
+                const currentObs = event.target.result;
+
+                if (currentObs && currentObs.eggs && currentObs.eggs.length > 0) {
+                    // Load current day's data (edited data)
+                    clearAllEggEntries();
+                    currentObs.eggs.forEach((egg) => {
+                        addEggEntryWithData(egg);
+                    });
+                    console.log(`Loaded ${currentObs.eggs.length} eggs from current day (${currentSurveyDate})`);
+                } else {
+                    // No current day data, try loading previous day's data
+                    const surveyDate = new Date(currentSurveyDate);
+                    const previousDay = new Date(surveyDate);
+                    previousDay.setDate(previousDay.getDate() - 1);
+                    const previousDayStr = previousDay.toISOString().split('T')[0];
+
+                    const previousRequest = index.get([nestId, previousDayStr]);
+
+                    previousRequest.onsuccess = (event) => {
+                        const previousObs = event.target.result;
+
+                        if (previousObs && previousObs.eggs && previousObs.eggs.length > 0) {
+                            // Clear existing egg entries
+                            clearAllEggEntries();
+
+                            // Add egg entries from previous day
+                            previousObs.eggs.forEach((egg) => {
+                                addEggEntryWithData(egg);
+                            });
+
+                            console.log(`Loaded ${previousObs.eggs.length} eggs from previous day (${previousDayStr})`);
+                        } else {
+                            // No previous data, clear everything and add one empty entry
+                            clearAllEggEntries();
+                            addEggEntry();
+                            console.log('No previous data found, added empty entry');
+                        }
+                    };
+                }
+            };
+
+            currentRequest.onerror = () => {
+                console.error('Failed to load data');
+                // Clear and add one empty entry
+                clearAllEggEntries();
+                addEggEntry();
+            };
+        }
+
+        // Add egg entry with pre-filled data from previous day
+        function addEggEntryWithData(eggData) {
+            const container = document.getElementById('eggEntriesContainer');
+            const entryId = eggEntryCounter++;
+            const entryNumber = container.children.length + 1;
+
+            console.log('addEggEntryWithData called with:', eggData);
+            console.log('eggData.eggNumber:', eggData.eggNumber);
+
+            // Ensure eggData has default values
+            const eggNumber = eggData.eggNumber || '';
+            const eggWeight = eggData.weight || '';
+            const eggLength = eggData.length || '';
+            const eggWidth = eggData.width || '';
+            const eggNote = eggData.note || '';
+
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'egg-entry';
+            entryDiv.id = `egg-entry-${entryId}`;
+            entryDiv.innerHTML = `
+                <div class="egg-entry-header">
+                    <span class="egg-entry-title">卵 #${entryNumber}</span>
+                    <button class="delete-entry-btn" onclick="deleteEggEntry(${entryId})" title="この卵を削除">🗑️</button>
+                </div>
+                <div class="input-row">
+                    <div class="input-field small">
+                        <label>卵番号</label>
+                        <select class="egg-number" data-entry="${entryId}">
+                            <option value="">-</option>
+                            <option value="a" ${eggNumber === 'a' ? 'selected' : ''}>a</option>
+                            <option value="b" ${eggNumber === 'b' ? 'selected' : ''}>b</option>
+                            <option value="c" ${eggNumber === 'c' ? 'selected' : ''}>c</option>
+                            <option value="d" ${eggNumber === 'd' ? 'selected' : ''}>d</option>
+                            <option value="e" ${eggNumber === 'e' ? 'selected' : ''}>e</option>
+                            <option value="f" ${eggNumber === 'f' ? 'selected' : ''}>f</option>
+                            <option value="g" ${eggNumber === 'g' ? 'selected' : ''}>g</option>
+                        </select>
+                    </div>
+                    <div class="input-field medium">
+                        <label>状態</label>
+                        <select class="egg-status" data-entry="${entryId}">
+                            <option value="">-</option>
+                            <option value="正常" selected>正常</option>
+                            <option value="孵化">孵化</option>
+                            <option value="消失">消失</option>
+                            <option value="破損">破損</option>
+                        </select>
+                    </div>
+                    <div class="input-field small">
+                        <label>
+                            <input type="checkbox" class="first-time-checkbox" data-entry="${entryId}" onchange="toggleFirstTimeInputs(${entryId})">
+                            初回
+                        </label>
+                    </div>
+                    <div class="input-field small">
+                        <label>重量 (g)</label>
+                        <input type="text" class="egg-weight" data-entry="${entryId}" placeholder="00.0" value="${eggWeight}" inputmode="none" disabled>
+                    </div>
+                    <div class="input-field small">
+                        <label>長径 (mm)</label>
+                        <input type="text" class="egg-length" data-entry="${entryId}" placeholder="00.00" value="${eggLength}" inputmode="none" disabled>
+                    </div>
+                    <div class="input-field small">
+                        <label>短径 (mm)</label>
+                        <input type="text" class="egg-width" data-entry="${entryId}" placeholder="00.00" value="${eggWidth}" inputmode="none" disabled>
+                    </div>
+                    <div class="input-field large">
+                        <label>備考</label>
+                        <input type="text" class="egg-note" data-entry="${entryId}" placeholder="備考" value="${eggNote}">
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(entryDiv);
+
+            // Attach keyboard to new weight, length, and width inputs
+            const weightInput = entryDiv.querySelector('.egg-weight');
+            const lengthInput = entryDiv.querySelector('.egg-length');
+            const widthInput = entryDiv.querySelector('.egg-width');
+            const eggNumberSelect = entryDiv.querySelector('.egg-number');
+
+            weightInput.addEventListener('focus', function() {
+                openKeyboard(this, '重量 (g) - XX.X形式');
+            });
+            lengthInput.addEventListener('focus', function() {
+                openKeyboard(this, '長径 (mm) - XX.XX形式');
+            });
+            widthInput.addEventListener('focus', function() {
+                openKeyboard(this, '短径 (mm) - XX.XX形式');
+            });
+
+            // Load previous data when egg number is selected
+            eggNumberSelect.addEventListener('change', function() {
+                loadEggPreviousData(entryId, this.value);
+            });
+
+            updateEggEntryNumbers();
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function openReorderModal() {
+            const modal = document.getElementById('reorderModal');
+            const nestList = document.getElementById('nestList');
+
+            let html = '';
+            nestOrder.forEach((nestId, index) => {
+                html += `
+                    <div class="nest-list-item" draggable="true" data-nest-id="${nestId}" data-index="${index}">
+                        <div>
+                            <div class="nest-id">ID: ${nestId}</div>
+                            <div class="nest-info-text">巣番号 ${nestId}</div>
+                        </div>
+                        <span class="drag-handle">☰</span>
+                    </div>
+                `;
+            });
+            nestList.innerHTML = html;
+
+            const items = nestList.querySelectorAll('.nest-list-item');
+            items.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+            });
+
+            modal.classList.add('active');
+        }
+
+        function closeReorderModal() {
+            document.getElementById('reorderModal').classList.remove('active');
+        }
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            if (draggedElement !== this) {
+                const draggedIndex = parseInt(draggedElement.getAttribute('data-index'));
+                const targetIndex = parseInt(this.getAttribute('data-index'));
+
+                const [movedItem] = nestOrder.splice(draggedIndex, 1);
+                nestOrder.splice(targetIndex, 0, movedItem);
+
+                openReorderModal();
+            }
+
+            return false;
+        }
+
+        function saveNestOrder() {
+            if (!db) {
+                alert('データベースが初期化されていません');
+                return;
+            }
+
+            const transaction = db.transaction(['settings'], 'readwrite');
+            const settingsStore = transaction.objectStore('settings');
+            const request = settingsStore.put({ key: 'nestOrder', value: nestOrder });
+
+            request.onsuccess = () => {
+                alert('巣の順序を保存しました:\n' + nestOrder.join(', '));
+                loadNestRecords();
+                closeReorderModal();
+            };
+
+            request.onerror = () => {
+                alert('保存に失敗しました');
+            };
+        }
+
+        function openAddNestModal() {
+            document.getElementById('addNestModal').classList.add('active');
+
+            const insertInput = document.getElementById('insertAfterNestId');
+            insertInput.addEventListener('input', function() {
+                const insertAfter = parseInt(this.value);
+                const newIdField = document.getElementById('newNestId');
+                if (insertAfter && insertAfter > 0) {
+                    newIdField.value = insertAfter + 1;
+                } else {
+                    newIdField.value = '';
+                }
+            });
+        }
+
+        function closeAddNestModal() {
+            document.getElementById('addNestModal').classList.remove('active');
+            document.getElementById('insertAfterNestId').value = '';
+            document.getElementById('newNestId').value = '';
+        }
+
+        function addNewNest() {
+            const insertAfter = parseInt(document.getElementById('insertAfterNestId').value);
+
+            if (!insertAfter || insertAfter < 1) {
+                alert('挿入位置を入力してください');
+                return;
+            }
+
+            if (!nestOrder.includes(insertAfter)) {
+                alert('指定されたIDの巣が存在しません');
+                return;
+            }
+
+            const newNestId = insertAfter + 1;
+
+            const updatedOrder = [];
+            nestOrder.forEach(id => {
+                if (id <= insertAfter) {
+                    updatedOrder.push(id);
+                } else {
+                    updatedOrder.push(id + 1);
+                }
+            });
+
+            const insertIndex = updatedOrder.indexOf(insertAfter) + 1;
+            updatedOrder.splice(insertIndex, 0, newNestId);
+
+            nestOrder = updatedOrder;
+
+            alert(`新しい巣 ID ${newNestId} を追加しました\n既存の巣のIDが繰り上がりました:\n` + nestOrder.join(', '));
+            closeAddNestModal();
+        }
+
+        // ========== KEYBOARD FUNCTIONS ==========
+        function openKeyboard(inputField, title) {
+            activeInputField = inputField;
+
+            // Clear the input field when opening keyboard
+            inputField.value = '';
+
+            document.getElementById('keyboardTitle').textContent = title || '数字入力';
+            document.getElementById('customKeyboard').classList.add('active');
+
+            // Initialize display with current value
+            updateKeyboardDisplay();
+
+            inputField.blur();
+        }
+
+        function closeKeyboard() {
+            document.getElementById('customKeyboard').classList.remove('active');
+
+            // Validate input before closing
+            if (activeInputField) {
+                validateInputRange();
+            }
+
+            activeInputField = null;
+        }
+
+        function updateKeyboardDisplay() {
+            const display = document.getElementById('keyboardDisplay');
+            if (activeInputField) {
+                const value = activeInputField.value || '0';
+                display.textContent = value;
+            }
+        }
+
+        function inputNumber(digit) {
+            if (!activeInputField) return;
+            const currentValue = activeInputField.value;
+
+            // Prevent multiple dots
+            if (digit === '.' && currentValue.includes('.')) return;
+
+            activeInputField.value = currentValue + digit;
+            updateKeyboardDisplay();
+        }
+
+        function deleteNumber() {
+            if (!activeInputField) return;
+            const currentValue = activeInputField.value;
+            activeInputField.value = currentValue.slice(0, -1);
+            updateKeyboardDisplay();
+        }
+
+        function clearInput() {
+            if (!activeInputField) return;
+            activeInputField.value = '';
+            updateKeyboardDisplay();
+        }
+
+        function validateInputRange() {
+            if (!activeInputField) return;
+
+            const value = parseFloat(activeInputField.value);
+            if (isNaN(value)) return;
+
+            let warning = '';
+
+            // Check based on field type
+            if (activeInputField.classList.contains('egg-weight')) {
+                if (value < 40 || value >= 80) {
+                    warning = `卵重量の警告: ${value}g は範囲外です。\n正常範囲: 40g以上80g未満`;
+                }
+            } else if (activeInputField.classList.contains('egg-length')) {
+                if (value < 50 || value >= 70) {
+                    warning = `長径の警告: ${value}mm は範囲外です。\n正常範囲: 50mm以上70mm未満`;
+                }
+            } else if (activeInputField.classList.contains('egg-width')) {
+                if (value < 35 || value >= 50) {
+                    warning = `短径の警告: ${value}mm は範囲外です。\n正常範囲: 35mm以上50mm未満`;
+                }
+            }
+
+            if (warning) {
+                alert(warning);
+            }
+        }
+
+        // Focus next input field when "次へ" button in keyboard is clicked
+        function keyboardNextField() {
+            if (!activeInputField) return;
+
+            const currentInputField = activeInputField.closest('.input-field');
+            const inputRow = currentInputField.closest('.input-row');
+
+            // Get all input fields in the same row
+            const allFields = Array.from(inputRow.querySelectorAll('.input-field input, .input-field select'));
+            const currentIndex = allFields.indexOf(activeInputField);
+
+            // Close current keyboard and focus next field if exists
+            closeKeyboard();
+
+            if (currentIndex >= 0 && currentIndex < allFields.length - 1) {
+                const nextField = allFields[currentIndex + 1];
+                nextField.focus();
+            }
+        }
+
+        function attachKeyboardToInputs() {
+            // Chick tab inputs
+            document.getElementById('chickBM').addEventListener('focus', function() {
+                openKeyboard(this, 'BM (g) - XXX.X形式');
+            });
+            document.getElementById('chickHL').addEventListener('focus', function() {
+                openKeyboard(this, 'HL (mm) - XX.X形式');
+            });
+            document.getElementById('chickBD').addEventListener('focus', function() {
+                openKeyboard(this, 'BD (mm) - XX.X形式');
+            });
+            document.getElementById('chickTL').addEventListener('focus', function() {
+                openKeyboard(this, 'TL (mm) - XX.X形式');
+            });
+
+            // Egg tab inputs - use event delegation for dynamically created fields
+            document.addEventListener('focusin', function(e) {
+                if (e.target.classList.contains('egg-weight')) {
+                    openKeyboard(e.target, '重量 (g) - 00.0形式');
+                } else if (e.target.classList.contains('egg-length')) {
+                    openKeyboard(e.target, '長径 (mm) - 00.00形式');
+                } else if (e.target.classList.contains('egg-width')) {
+                    openKeyboard(e.target, '短径 (mm) - 00.00形式');
+                }
+            });
+        }
+
+        // ========== TAB SWITCHING ==========
+        function switchDataTab(tabName) {
+            currentTab = tabName;
+
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach((btn, index) => {
+                if ((tabName === 'egg' && index === 0) || (tabName === 'chick' && index === 1)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            const eggSection = document.getElementById('eggInputSection');
+            const chickSection = document.getElementById('chickInputSection');
+
+            if (tabName === 'egg') {
+                eggSection.classList.add('active');
+                chickSection.classList.remove('active');
+            } else {
+                eggSection.classList.remove('active');
+                chickSection.classList.add('active');
+            }
+        }
+
+        // ========== GPS AND MAP ==========
+        function captureGPS() {
+            if (!currentNestId) {
+                alert('巣を選択してください');
+                return;
+            }
+
+            if (!db) {
+                alert('データベースが初期化されていません');
+                return;
+            }
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+                        const timestamp = new Date().toISOString();
+
+                        // Save GPS location to database
+                        saveGPSLocation(currentNestId, lat, lon, accuracy, timestamp);
+                    },
+                    (error) => {
+                        alert('GPS座標の取得に失敗しました');
+                        console.error(error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                alert('このデバイスはGPSに対応していません');
+            }
+        }
+
+        function saveGPSLocation(nestId, latitude, longitude, accuracy, timestamp) {
+            const transaction = db.transaction(['nests'], 'readwrite');
+            const nestStore = transaction.objectStore('nests');
+            const request = nestStore.get(nestId);
+
+            request.onsuccess = (event) => {
+                const nestData = event.target.result;
+
+                if (nestData) {
+                    // Update nest data with GPS location
+                    nestData.gpsLocation = {
+                        latitude: latitude,
+                        longitude: longitude,
+                        accuracy: accuracy,
+                        timestamp: timestamp
+                    };
+
+                    const updateRequest = nestStore.put(nestData);
+                    updateRequest.onsuccess = () => {
+                        const stakeNumber = nestData.stakeNumber || 'X';
+                        showSuccessMessage(`杭番号${stakeNumber}のGPS座標を保存しました`);
+                        console.log(`GPS saved for nest ${nestId}:`, latitude, longitude);
+                    };
+
+                    updateRequest.onerror = () => {
+                        showErrorMessage('GPS座標の保存に失敗しました');
+                    };
+                } else {
+                    showErrorMessage('巣データが見つかりません');
+                }
+            };
+
+            request.onerror = () => {
+                showErrorMessage('GPS座標の保存に失敗しました');
+            };
+        }
+
+        function showMap() {
+            const modal = document.getElementById('mapModal');
+            modal.classList.add('active');
+
+            // Initialize map if not already initialized
+            if (!map) {
+                initializeMap();
+            } else {
+                // Re-center map and update markers
+                updateMapMarkers();
+            }
+        }
+
+        function closeMapModal() {
+            const modal = document.getElementById('mapModal');
+            modal.classList.remove('active');
+        }
+
+        // Initialize Google Map (called when API is loaded)
+        function initMap() {
+            console.log('Google Maps API loaded');
+            // Map will be initialized when showMap() is called
+        }
+
+        function initializeMap() {
+            // 蕪島ウミネコ繁殖地の座標
+            const kabushimaBreedingArea = { lat: 40.538563201625706, lng: 141.5575784703456 };
+
+            // Create map centered on Kabushima Breeding Area
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 18,
+                center: kabushimaBreedingArea,
+                mapTypeId: 'satellite', // 衛星画像モード
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                    position: google.maps.ControlPosition.TOP_CENTER,
+                },
+                zoomControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+            });
+
+            // Add a marker for Kabushima Breeding Area
+            const breedingMarker = new google.maps.Marker({
+                position: kabushimaBreedingArea,
+                map: map,
+                title: '蕪島ウミネコ繁殖地',
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.8,
+                    strokeWeight: 2,
+                    strokeColor: '#FFFFFF',
+                }
+            });
+
+            // Add info window for the breeding area
+            const infoWindow = new google.maps.InfoWindow({
+                content: '<div style="padding: 10px;"><h3>蕪島ウミネコ繁殖地</h3><p>調査エリアの中心</p></div>'
+            });
+
+            breedingMarker.addListener('click', () => {
+                infoWindow.open(map, breedingMarker);
+            });
+
+            markers.push(breedingMarker);
+
+            // Load and display nest locations from database
+            updateMapMarkers();
+        }
+
+        function updateMapMarkers() {
+            if (!map) return;
+
+            // Clear existing nest markers (keep shrine marker)
+            markers.slice(1).forEach(marker => marker.setMap(null));
+            markers = markers.slice(0, 1);
+
+            // Load nest locations from database and add markers
+            // This will be implemented when GPS data is saved
+            loadNestLocationsOnMap();
+        }
+
+        function loadNestLocationsOnMap() {
+            if (!db || !map) return;
+
+            const transaction = db.transaction(['nests'], 'readonly');
+            const nestStore = transaction.objectStore('nests');
+            const request = nestStore.getAll();
+
+            request.onsuccess = (event) => {
+                const allNests = event.target.result;
+
+                allNests.forEach(nestData => {
+                    // Check if this nest has GPS location
+                    if (nestData.gpsLocation && nestData.gpsLocation.latitude && nestData.gpsLocation.longitude) {
+                        const position = {
+                            lat: nestData.gpsLocation.latitude,
+                            lng: nestData.gpsLocation.longitude
+                        };
+
+                        const stakeNumber = nestData.stakeNumber || 'X';
+                        const accuracy = nestData.gpsLocation.accuracy ? `(精度: ${Math.round(nestData.gpsLocation.accuracy)}m)` : '';
+
+                        // Create marker for this nest
+                        const nestMarker = new google.maps.Marker({
+                            position: position,
+                            map: map,
+                            title: `杭番号${stakeNumber}`,
+                            label: {
+                                text: stakeNumber,
+                                color: 'white',
+                                fontSize: '14px',
+                                fontWeight: 'bold'
+                            },
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 12,
+                                fillColor: '#4285F4',
+                                fillOpacity: 0.9,
+                                strokeWeight: 2,
+                                strokeColor: '#FFFFFF',
+                            }
+                        });
+
+                        // Create info window
+                        const infoContent = `
+                            <div style="padding: 10px;">
+                                <h3>杭番号${stakeNumber}</h3>
+                                <p>緯度: ${position.lat.toFixed(6)}</p>
+                                <p>経度: ${position.lng.toFixed(6)}</p>
+                                <p style="font-size: 12px; color: #666;">${accuracy}</p>
+                            </div>
+                        `;
+
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: infoContent
+                        });
+
+                        nestMarker.addListener('click', () => {
+                            infoWindow.open(map, nestMarker);
+                        });
+
+                        markers.push(nestMarker);
+                    }
+                });
+
+                console.log(`Loaded ${markers.length - 1} nest locations on map`);
+            };
+
+            request.onerror = () => {
+                console.error('Failed to load nest locations');
+            };
+        }
+
+        // ========== SAVE FUNCTIONS ==========
+        function saveRecord() {
+            if (!currentNestId) {
+                alert('巣を選択してください');
+                return;
+            }
+
+            if (!db) {
+                alert('データベースが初期化されていません');
+                return;
+            }
+
+            // First, save nest information (stake number and individuals)
+            saveNestInfo(currentNestId);
+
+            const today = currentSurveyDate || new Date().toISOString().split('T')[0];
+
+            if (currentTab === 'egg') {
+                const allEggs = getAllEggData();
+
+                if (allEggs.length === 0) {
+                    alert('少なくとも1つの卵を追加してください');
+                    return;
+                }
+
+                saveObservationData(currentNestId, today, allEggs, []);
+            } else {
+                const chickNumber = document.getElementById('chickNumber').value;
+                const chickBM = document.getElementById('chickBM').value;
+                const chickHL = document.getElementById('chickHL').value;
+                const chickBD = document.getElementById('chickBD').value;
+                const chickTL = document.getElementById('chickTL').value;
+                const chickRegurgitation = document.getElementById('chickRegurgitation').value;
+                const ringColor = document.getElementById('ringColor').value;
+                const ringNumber = document.getElementById('ringNumber').value;
+                const chickNote = document.getElementById('chickNote').value;
+
+                if (!chickNumber) {
+                    alert('雛番号を入力してください');
+                    return;
+                }
+
+                const chickData = {
+                    chickNumber: chickNumber,
+                    bm: chickBM ? parseFloat(chickBM) : null,
+                    hl: chickHL ? parseFloat(chickHL) : null,
+                    bd: chickBD ? parseFloat(chickBD) : null,
+                    tl: chickTL ? parseFloat(chickTL) : null,
+                    regurgitation: chickRegurgitation,
+                    ringColor: ringColor,
+                    ringNumber: ringNumber,
+                    note: chickNote
+                };
+
+                saveObservationData(currentNestId, today, [], [chickData]);
+            }
+        }
+
+        function saveObservationData(nestId, surveyDate, eggs, chicks) {
+            const transaction = db.transaction(['observations'], 'readwrite');
+            const obsStore = transaction.objectStore('observations');
+
+            const index = obsStore.index('nestId_surveyDate');
+            const request = index.get([nestId, surveyDate]);
+
+            request.onsuccess = (event) => {
+                const existingObs = event.target.result;
+
+                if (existingObs) {
+                    // Overwrite existing data instead of appending
+                    if (eggs.length > 0) {
+                        existingObs.eggs = eggs;
+                    }
+                    if (chicks.length > 0) {
+                        existingObs.chicks = chicks;
+                    }
+                    existingObs.timestamp = new Date().toISOString();
+
+                    const updateRequest = obsStore.put(existingObs);
+                    updateRequest.onsuccess = () => {
+                        showSuccessMessage('データを保存しました！');
+                        loadNestRecords();
+                        markNestAsCompleted(nestId);
+                        hasUnsavedChanges = false; // Reset unsaved changes flag
+                        askToMoveToNextNest();
+                    };
+                } else {
+                    const newObs = {
+                        nestId: nestId,
+                        surveyDate: surveyDate,
+                        eggs: eggs,
+                        chicks: chicks,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    const addRequest = obsStore.add(newObs);
+                    addRequest.onsuccess = () => {
+                        showSuccessMessage('データを保存しました！');
+                        loadNestRecords();
+                        markNestAsCompleted(nestId);
+                        hasUnsavedChanges = false; // Reset unsaved changes flag
+                        askToMoveToNextNest();
+                    };
+                }
+            };
+
+            request.onerror = () => {
+                showErrorMessage('保存に失敗しました');
+            };
+        }
+
+        function showSuccessMessage(message) {
+            const messageEl = document.getElementById('successMessage');
+            messageEl.textContent = message;
+            messageEl.classList.add('show');
+
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 2000);
+        }
+
+        function showErrorMessage(message) {
+            const messageEl = document.getElementById('successMessage');
+            messageEl.textContent = message;
+            messageEl.style.background = '#dc3545';
+            messageEl.classList.add('show');
+
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+                messageEl.style.background = '#28a745';
+            }, 3000);
+        }
+
+        function clearInputFields() {
+            if (currentTab === 'egg') {
+                clearAllEggEntries();
+                addEggEntry();
+            } else {
+                document.getElementById('chickNumber').value = '';
+                document.getElementById('chickBM').value = '';
+                document.getElementById('chickHL').value = '';
+                document.getElementById('chickBD').value = '';
+                document.getElementById('chickTL').value = '';
+                document.getElementById('chickRegurgitation').value = '';
+                document.getElementById('ringColor').value = '';
+                document.getElementById('ringNumber').value = '';
+                document.getElementById('chickNote').value = '';
+            }
+        }
+
+        // ========== EGG ENTRY FUNCTIONS ==========
+        function addEggEntry() {
+            const container = document.getElementById('eggEntriesContainer');
+            const entryId = eggEntryCounter++;
+            const entryNumber = container.children.length + 1;
+
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'egg-entry';
+            entryDiv.id = `egg-entry-${entryId}`;
+            entryDiv.innerHTML = `
+                <div class="egg-entry-header">
+                    <span class="egg-entry-title">卵 #${entryNumber}</span>
+                    <button class="delete-entry-btn" onclick="deleteEggEntry(${entryId})" title="この卵を削除">🗑️</button>
+                </div>
+                <div class="input-row">
+                    <div class="input-field small">
+                        <label>卵番号</label>
+                        <select class="egg-number" data-entry="${entryId}">
+                            <option value="">-</option>
+                            <option value="a">a</option>
+                            <option value="b">b</option>
+                            <option value="c">c</option>
+                            <option value="d">d</option>
+                            <option value="e">e</option>
+                            <option value="f">f</option>
+                            <option value="g">g</option>
+                        </select>
+                    </div>
+                    <div class="input-field medium">
+                        <label>状態</label>
+                        <select class="egg-status" data-entry="${entryId}">
+                            <option value="">-</option>
+                            <option value="正常">正常</option>
+                            <option value="孵化">孵化</option>
+                            <option value="消失">消失</option>
+                            <option value="破損">破損</option>
+                        </select>
+                    </div>
+                    <div class="input-field small">
+                        <label>
+                            <input type="checkbox" class="first-time-checkbox" data-entry="${entryId}" onchange="toggleFirstTimeInputs(${entryId})">
+                            初回
+                        </label>
+                    </div>
+                    <div class="input-field small">
+                        <label>重量 (g)</label>
+                        <input type="text" class="egg-weight" data-entry="${entryId}" placeholder="00.0" inputmode="none" disabled>
+                    </div>
+                    <div class="input-field small">
+                        <label>長径 (mm)</label>
+                        <input type="text" class="egg-length" data-entry="${entryId}" placeholder="00.00" inputmode="none" disabled>
+                    </div>
+                    <div class="input-field small">
+                        <label>短径 (mm)</label>
+                        <input type="text" class="egg-width" data-entry="${entryId}" placeholder="00.00" inputmode="none" disabled>
+                    </div>
+                    <div class="input-field large">
+                        <label>備考</label>
+                        <input type="text" class="egg-note" data-entry="${entryId}" placeholder="備考">
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(entryDiv);
+
+            const weightInput = entryDiv.querySelector('.egg-weight');
+            const lengthInput = entryDiv.querySelector('.egg-length');
+            const widthInput = entryDiv.querySelector('.egg-width');
+            const eggNumberSelect = entryDiv.querySelector('.egg-number');
+
+            weightInput.addEventListener('focus', function() {
+                openKeyboard(this, '重量 (g) - XX.X形式');
+            });
+            lengthInput.addEventListener('focus', function() {
+                openKeyboard(this, '長径 (mm) - XX.XX形式');
+            });
+            widthInput.addEventListener('focus', function() {
+                openKeyboard(this, '短径 (mm) - XX.XX形式');
+            });
+
+            // Load previous data when egg number is selected
+            eggNumberSelect.addEventListener('change', function() {
+                loadEggPreviousData(entryId, this.value);
+            });
+
+            updateEggEntryNumbers();
+        }
+
+        function deleteEggEntry(entryId) {
+            if (confirm('この卵のデータを削除しますか？')) {
+                const entry = document.getElementById(`egg-entry-${entryId}`);
+                if (entry) {
+                    entry.remove();
+                    updateEggEntryNumbers();
+
+                    // If no entries left, add one empty entry
+                    const container = document.getElementById('eggEntriesContainer');
+                    if (container.children.length === 0) {
+                        addEggEntry();
+                    }
+                }
+            }
+        }
+
+        function updateEggEntryNumbers() {
+            const container = document.getElementById('eggEntriesContainer');
+            const entries = container.querySelectorAll('.egg-entry');
+            entries.forEach((entry, index) => {
+                const title = entry.querySelector('.egg-entry-title');
+                if (title) {
+                    title.textContent = `卵 #${index + 1}`;
+                }
+            });
+        }
+
+        function toggleFirstTimeInputs(entryId) {
+            const entry = document.getElementById(`egg-entry-${entryId}`);
+            if (!entry) return;
+
+            const checkbox = entry.querySelector('.first-time-checkbox');
+            const weightInput = entry.querySelector('.egg-weight');
+            const lengthInput = entry.querySelector('.egg-length');
+            const widthInput = entry.querySelector('.egg-width');
+
+            if (checkbox.checked) {
+                // 初回チェック時: 入力可能にする
+                weightInput.disabled = false;
+                lengthInput.disabled = false;
+                widthInput.disabled = false;
+                weightInput.value = '';
+                lengthInput.value = '';
+                widthInput.value = '';
+            } else {
+                // 初回チェック解除時: 入力不可にし、直近のデータを表示
+                weightInput.disabled = true;
+                lengthInput.disabled = true;
+                widthInput.disabled = true;
+
+                // Reload previous data for the selected egg number
+                const eggNumberSelect = entry.querySelector('.egg-number');
+                if (eggNumberSelect && eggNumberSelect.value) {
+                    loadEggPreviousData(entryId, eggNumberSelect.value);
+                }
+            }
+        }
+
+        function loadEggPreviousData(entryId, eggNumber) {
+            if (!db || !currentNestId || !currentSurveyDate || !eggNumber) return;
+
+            const entry = document.getElementById(`egg-entry-${entryId}`);
+            if (!entry) return;
+
+            const checkbox = entry.querySelector('.first-time-checkbox');
+
+            // Only load previous data if checkbox is NOT checked
+            if (checkbox.checked) return;
+
+            const weightInput = entry.querySelector('.egg-weight');
+            const lengthInput = entry.querySelector('.egg-length');
+            const widthInput = entry.querySelector('.egg-width');
+
+            // Search for the most recent data for this egg in this nest
+            const transaction = db.transaction(['observations'], 'readonly');
+            const obsStore = transaction.objectStore('observations');
+            const index = obsStore.index('nestId');
+            const request = index.getAll(currentNestId);
+
+            request.onsuccess = (event) => {
+                const observations = event.target.result;
+
+                // Filter observations before current survey date and find the egg with matching number
+                const previousObs = observations
+                    .filter(obs => obs.surveyDate < currentSurveyDate && obs.eggs)
+                    .sort((a, b) => b.surveyDate.localeCompare(a.surveyDate)); // Sort descending by date
+
+                // Find the most recent observation with this egg number
+                for (let obs of previousObs) {
+                    const matchingEgg = obs.eggs.find(egg => egg.eggNumber === eggNumber);
+                    if (matchingEgg && (matchingEgg.weight || matchingEgg.length || matchingEgg.width)) {
+                        // Found previous data, populate the fields
+                        weightInput.value = matchingEgg.weight || '';
+                        lengthInput.value = matchingEgg.length || '';
+                        widthInput.value = matchingEgg.width || '';
+                        console.log(`Loaded previous data for egg ${eggNumber} from ${obs.surveyDate}`);
+                        return;
+                    }
+                }
+
+                // No previous data found
+                console.log(`No previous data found for egg ${eggNumber}`);
+            };
+
+            request.onerror = () => {
+                console.error('Failed to load previous egg data');
+            };
+        }
+
+        function getAllEggData() {
+            const container = document.getElementById('eggEntriesContainer');
+            const entries = container.querySelectorAll('.egg-entry');
+            const allEggs = [];
+
+            entries.forEach((entry, index) => {
+                const eggNumber = entry.querySelector('.egg-number').value || (index + 1).toString();
+                const eggStatus = entry.querySelector('.egg-status').value || '正常';
+                const eggWeight = entry.querySelector('.egg-weight').value;
+                const eggLength = entry.querySelector('.egg-length').value;
+                const eggWidth = entry.querySelector('.egg-width').value;
+                const eggNote = entry.querySelector('.egg-note').value;
+                const isFirstTime = entry.querySelector('.first-time-checkbox').checked;
+
+                allEggs.push({
+                    eggNumber: eggNumber,
+                    status: eggStatus,
+                    weight: eggWeight ? parseFloat(eggWeight) : null,
+                    length: eggLength ? parseFloat(eggLength) : null,
+                    width: eggWidth ? parseFloat(eggWidth) : null,
+                    note: eggNote,
+                    isFirstTime: isFirstTime
+                });
+            });
+
+            return allEggs;
+        }
+
+        function clearAllEggEntries() {
+            const container = document.getElementById('eggEntriesContainer');
+            container.innerHTML = '';
+            eggEntryCounter = 0;
+        }
+
+        // ========== INITIALIZE ==========
+        // ========== DATA MANAGEMENT ==========
+        function clearAllData() {
+            if (!confirm('全てのデータを削除しますか？\nこの操作は取り消せません。')) {
+                return;
+            }
+
+            if (!db) {
+                alert('データベースが初期化されていません');
+                return;
+            }
+
+            const transaction = db.transaction(['nests', 'observations', 'settings'], 'readwrite');
+
+            // Clear nests
+            const nestsStore = transaction.objectStore('nests');
+            const clearNestsRequest = nestsStore.clear();
+
+            clearNestsRequest.onsuccess = () => {
+                console.log('Nests cleared');
+            };
+
+            // Clear observations
+            const obsStore = transaction.objectStore('observations');
+            const clearObsRequest = obsStore.clear();
+
+            clearObsRequest.onsuccess = () => {
+                console.log('Observations cleared');
+            };
+
+            // Clear settings
+            const settingsStore = transaction.objectStore('settings');
+            const clearSettingsRequest = settingsStore.clear();
+
+            clearSettingsRequest.onsuccess = () => {
+                console.log('Settings cleared');
+            };
+
+            transaction.oncomplete = () => {
+                // Clear local storage
+                localStorage.removeItem('todayInputStatus');
+                localStorage.removeItem('todayPresenceStatus');
+
+                // Reset global variables
+                nestOrder = [];
+                todayInputStatus = {};
+                todayPresenceStatus = {};
+                currentNestId = null;
+
+                alert('全てのデータを削除しました。ページをリロードします。');
+                location.reload();
+            };
+
+            transaction.onerror = () => {
+                alert('データ削除に失敗しました');
+            };
+        }
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        window.onload = () => {
+            console.log('Survey App v6 initialized');
+            loadTodayInputStatus();
+            loadTodayPresenceStatus();
+            initDB();
+            attachKeyboardToInputs();
+        };
+    </script>
+
+    <!-- Success message overlay -->
+    <div class="success-message" id="successMessage"></div>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnowMwEYeC7J2-EJNEdXEtECkwrzayeA4&callback=initMap&libraries=&v=weekly" defer></script>
+</body>
+</html>
