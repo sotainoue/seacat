@@ -128,16 +128,16 @@
             aspect-ratio: 1;
             border: 2px solid #e9ecef;
             border-radius: 12px;
-            padding: 10px;
-            cursor: pointer;
+            padding: 8px;
             transition: all 0.3s;
             background: white;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .calendar-day:hover {
             border-color: #667eea;
-            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
@@ -156,16 +156,59 @@
         }
 
         .day-number {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
-        .day-count {
-            font-size: 12px;
-            color: #666;
+        .day-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .category-btn {
+            padding: 4px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
             text-align: center;
+        }
+
+        .category-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .category-btn.patrol {
+            background: #28a745;
+        }
+
+        .category-btn.patrol:hover {
+            background: #218838;
+        }
+
+        .category-btn.capture {
+            background: #dc3545;
+        }
+
+        .category-btn.capture:hover {
+            background: #c82333;
+        }
+
+        .category-btn.monitoring {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .category-btn.monitoring:hover {
+            background: #e0a800;
         }
 
         /* Home tabs */
@@ -726,6 +769,118 @@
             background-color: #f0f0f0;
             color: #666;
             cursor: not-allowed;
+        }
+
+        /* Capture screen label (category) styles */
+        #captureScreen .input-field label {
+            font-size: 22px;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Capture screen input styles */
+        #captureScreen .input-field input,
+        #captureScreen .input-field select {
+            font-size: 32px;
+            color: white;
+            background-color: #667eea;
+            border: 2px solid #5568d3;
+            padding: 12px;
+        }
+
+        #captureScreen .input-field input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        #captureScreen .input-field input:focus,
+        #captureScreen .input-field select:focus {
+            background-color: #5568d3;
+            border-color: #4451b8;
+        }
+
+        /* Capture Tabs */
+        .capture-tabs-container {
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .capture-tabs {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+        }
+
+        .capture-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .capture-tab:hover {
+            background: #e0e0e0;
+        }
+
+        .capture-tab.active {
+            background: #dc3545;
+            border-color: #c82333;
+            border-bottom: 2px solid #dc3545;
+            margin-bottom: -2px;
+        }
+
+        .capture-tab.active .capture-tab-label {
+            color: white;
+        }
+
+        .capture-tab.active .capture-tab-close {
+            color: white;
+        }
+
+        .capture-tab.active .capture-tab-close:hover {
+            color: #ffcccc;
+        }
+
+        .capture-tab-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .capture-tab-close {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+        }
+
+        .capture-tab-close:hover {
+            color: #dc3545;
+        }
+
+        .capture-tab-add {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .capture-tab-add:hover {
+            background: #218838;
         }
 
         .input-next-wrapper {
@@ -1493,6 +1648,116 @@
         </div>
     </div>
 
+    <!-- Capture Screen -->
+    <div id="captureScreen" class="screen">
+        <div class="screen-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <button class="back-button" onclick="backToHomeFromCapture()">◀ ホームに戻る</button>
+                <h2 id="captureDateDisplay" style="color: #333; margin: 0;">捕獲入力</h2>
+            </div>
+
+            <!-- Capture Tabs -->
+            <div class="capture-tabs-container">
+                <div class="capture-tabs" id="captureTabs">
+                    <div class="capture-tab active" data-tab-id="1" onclick="switchCaptureTab(1)">
+                        <span class="capture-tab-label">個体 1</span>
+                        <button class="capture-tab-close" onclick="event.stopPropagation(); closeCaptureTab(1)">×</button>
+                    </div>
+                    <button class="capture-tab-add" onclick="addCaptureTab()">+</button>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="captureTabContent">
+                <!-- 3列: 杭番号、プラリング、メタルリング -->
+            <div class="input-row" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="input-field">
+                    <label>杭番号</label>
+                    <input type="text" id="captureStakeNumber" placeholder="杭番号">
+                </div>
+                <div class="input-field">
+                    <label>プラリング</label>
+                    <input type="text" id="capturePlasticRing" placeholder="プラリング">
+                </div>
+                <div class="input-field">
+                    <label>メタルリング</label>
+                    <input type="text" id="captureMetalRing" placeholder="メタルリング">
+                </div>
+            </div>
+
+            <!-- 4列: BM、BD、HL、TL -->
+            <div class="input-row" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="input-field">
+                    <label>BM (g)</label>
+                    <input type="text" id="captureBM" class="number-input" placeholder="000.0" inputmode="none">
+                </div>
+                <div class="input-field">
+                    <label>BD (mm)</label>
+                    <input type="text" id="captureBD" class="number-input" placeholder="00.0" inputmode="none">
+                </div>
+                <div class="input-field">
+                    <label>HL (mm)</label>
+                    <input type="text" id="captureHL" class="number-input" placeholder="00.0" inputmode="none">
+                </div>
+                <div class="input-field">
+                    <label>TL (mm)</label>
+                    <input type="text" id="captureTL" class="number-input" placeholder="00.0" inputmode="none">
+                </div>
+            </div>
+
+            <!-- WLを単独行に -->
+            <div class="input-row" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="input-field">
+                    <label>WL (mm)</label>
+                    <input type="text" id="captureWL" class="number-input" placeholder="000.0" inputmode="none">
+                </div>
+            </div>
+
+            <!-- 2列: 採血開始時刻、採血終了時刻 -->
+            <div class="input-row" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="input-field">
+                    <label>採血開始時刻</label>
+                    <input type="time" id="captureBloodStart">
+                </div>
+                <div class="input-field">
+                    <label>採血終了時刻</label>
+                    <input type="time" id="captureBloodEnd">
+                </div>
+            </div>
+
+            <!-- 2列: ロガー、ロガーID -->
+            <div class="input-row" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="input-field">
+                    <label>ロガー</label>
+                    <select id="captureLogger">
+                        <option value="">-</option>
+                        <option value="LT">LT</option>
+                        <option value="GT">GT</option>
+                        <option value="なし">なし</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label>ロガーID</label>
+                    <input type="text" id="captureLoggerID" placeholder="ロガーID">
+                </div>
+            </div>
+
+            <!-- 1列: 放鳥時刻 -->
+            <div class="input-row" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="input-field">
+                    <label>放鳥時刻</label>
+                    <input type="time" id="captureReleaseTime">
+                </div>
+            </div>
+
+            <!-- 保存ボタン -->
+            <div class="save-button-container">
+                <button class="btn-save" onclick="saveCaptureData()">💾 保存</button>
+            </div>
+            </div> <!-- Close captureTabContent -->
+        </div>
+    </div>
+
     <!-- Custom Number Keyboard -->
     <div class="keyboard-overlay" id="customKeyboard">
         <div class="keyboard-header">
@@ -1584,6 +1849,11 @@
         let hasUnsavedChanges = false; // 未保存の変更があるかどうか
         let map; // Google Map instance
         let markers = []; // Array to store map markers
+
+        // Capture tabs management
+        let captureTabCounter = 1; // タブIDのカウンター
+        let currentCaptureTab = 1; // 現在アクティブなタブID
+        let captureTabsData = {}; // 各タブのデータを保存 { tabId: {データ} }
 
         // Initialize IndexedDB
         function initDB() {
@@ -1773,8 +2043,58 @@
         function showHomeScreen() {
             document.getElementById('homeScreen').classList.add('active');
             document.getElementById('surveyScreen').classList.remove('active');
+            document.getElementById('captureScreen').classList.remove('active');
             currentScreen = 'home';
             renderCalendar();
+        }
+
+        function showCaptureScreen(dateStr) {
+            currentSurveyDate = dateStr;
+            document.getElementById('homeScreen').classList.remove('active');
+            document.getElementById('surveyScreen').classList.remove('active');
+            document.getElementById('captureScreen').classList.add('active');
+            currentScreen = 'capture';
+
+            // Display date
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const formattedDate = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+            document.getElementById('captureDateDisplay').textContent = `捕獲入力 - ${formattedDate}`;
+
+            // Reset tabs - keep only the first tab
+            captureTabCounter = 1;
+            currentCaptureTab = 1;
+            captureTabsData = {};
+
+            const tabsContainer = document.getElementById('captureTabs');
+            tabsContainer.innerHTML = `
+                <div class="capture-tab active" data-tab-id="1" onclick="switchCaptureTab(1)">
+                    <span class="capture-tab-label">個体 1</span>
+                    <button class="capture-tab-close" onclick="event.stopPropagation(); closeCaptureTab(1)">×</button>
+                </div>
+                <button class="capture-tab-add" onclick="addCaptureTab()">+</button>
+            `;
+
+            // Clear input fields
+            document.getElementById('captureStakeNumber').value = '';
+            document.getElementById('capturePlasticRing').value = '';
+            document.getElementById('captureMetalRing').value = '';
+            document.getElementById('captureBM').value = '';
+            document.getElementById('captureBD').value = '';
+            document.getElementById('captureHL').value = '';
+            document.getElementById('captureTL').value = '';
+            document.getElementById('captureWL').value = '';
+            document.getElementById('captureBloodStart').value = '';
+            document.getElementById('captureBloodEnd').value = '';
+            document.getElementById('captureLogger').value = '';
+            document.getElementById('captureLoggerID').value = '';
+            document.getElementById('captureReleaseTime').value = '';
+
+            // Attach keyboard to number inputs
+            attachCaptureKeyboard();
+        }
+
+        function backToHomeFromCapture() {
+            showHomeScreen();
         }
 
         // Switch home tabs (calendar/sheet)
@@ -2195,6 +2515,22 @@
             showSurveyScreen(dateStr);
         }
 
+        // ========== CATEGORY FUNCTIONS ==========
+        function openPatrol(dateStr) {
+            console.log('Open patrol for:', dateStr);
+            showSurveyScreen(dateStr);
+        }
+
+        function openCapture(dateStr) {
+            console.log('Open capture for:', dateStr);
+            showCaptureScreen(dateStr);
+        }
+
+        function openMonitoring(dateStr) {
+            console.log('Open monitoring for:', dateStr);
+            alert(`モニタリング機能（${dateStr}）\nこの機能は今後実装予定です`);
+        }
+
         // ========== CALENDAR FUNCTIONS ==========
         function renderCalendar() {
             const year = currentDate.getFullYear();
@@ -2229,9 +2565,13 @@
 
                 if (isToday) classes.push('today');
 
-                html += `<div class="${classes.join(' ')}" onclick="selectDate('${dateStr}')" data-date="${dateStr}">
+                html += `<div class="${classes.join(' ')}" data-date="${dateStr}">
                     <div class="day-number">${day}</div>
-                    <div class="day-count" id="count-${dateStr}">-</div>
+                    <div class="day-categories">
+                        <button class="category-btn patrol" onclick="event.stopPropagation(); openPatrol('${dateStr}')">見回り</button>
+                        <button class="category-btn capture" onclick="event.stopPropagation(); openCapture('${dateStr}')">捕獲</button>
+                        <button class="category-btn monitoring" onclick="event.stopPropagation(); openMonitoring('${dateStr}')">モニタリング</button>
+                    </div>
                 </div>`;
             }
 
@@ -2834,6 +3174,11 @@
             const widthInput = entryDiv.querySelector('.egg-width');
             const eggNumberSelect = entryDiv.querySelector('.egg-number');
 
+            // Add long press functionality for editing
+            addLongPressEdit(weightInput, '重量 (g) - XX.X形式');
+            addLongPressEdit(lengthInput, '長径 (mm) - XX.XX形式');
+            addLongPressEdit(widthInput, '短径 (mm) - XX.XX形式');
+
             weightInput.addEventListener('focus', function() {
                 openKeyboard(this, '重量 (g) - XX.X形式');
             });
@@ -2998,6 +3343,55 @@
             closeAddNestModal();
         }
 
+        // ========== LONG PRESS EDIT FUNCTION ==========
+        function addLongPressEdit(inputElement, title) {
+            let pressTimer;
+
+            // タッチデバイス用
+            inputElement.addEventListener('touchstart', function(e) {
+                if (this.disabled) {
+                    e.preventDefault();
+                    pressTimer = setTimeout(() => {
+                        // 長押し確認ダイアログ
+                        if (confirm('この欄を修正しますか？')) {
+                            this.disabled = false;
+                            this.focus();
+                        }
+                    }, 500); // 500ms長押し
+                }
+            });
+
+            inputElement.addEventListener('touchend', function() {
+                clearTimeout(pressTimer);
+            });
+
+            inputElement.addEventListener('touchmove', function() {
+                clearTimeout(pressTimer);
+            });
+
+            // マウス用（PC/iPad）
+            inputElement.addEventListener('mousedown', function(e) {
+                if (this.disabled) {
+                    e.preventDefault();
+                    pressTimer = setTimeout(() => {
+                        // 長押し確認ダイアログ
+                        if (confirm('この欄を修正しますか？')) {
+                            this.disabled = false;
+                            this.focus();
+                        }
+                    }, 500); // 500ms長押し
+                }
+            });
+
+            inputElement.addEventListener('mouseup', function() {
+                clearTimeout(pressTimer);
+            });
+
+            inputElement.addEventListener('mouseleave', function() {
+                clearTimeout(pressTimer);
+            });
+        }
+
         // ========== KEYBOARD FUNCTIONS ==========
         function openKeyboard(inputField, title) {
             activeInputField = inputField;
@@ -3130,6 +3524,183 @@
                     openKeyboard(e.target, '短径 (mm) - 00.00形式');
                 }
             });
+        }
+
+        function attachCaptureKeyboard() {
+            document.getElementById('captureBM').addEventListener('focus', function() {
+                openKeyboard(this, 'BM (g) - 000.0形式');
+            });
+            document.getElementById('captureBD').addEventListener('focus', function() {
+                openKeyboard(this, 'BD (mm) - 00.0形式');
+            });
+            document.getElementById('captureHL').addEventListener('focus', function() {
+                openKeyboard(this, 'HL (mm) - 00.0形式');
+            });
+            document.getElementById('captureTL').addEventListener('focus', function() {
+                openKeyboard(this, 'TL (mm) - 00.0形式');
+            });
+            document.getElementById('captureWL').addEventListener('focus', function() {
+                openKeyboard(this, 'WL (mm) - 000.0形式');
+            });
+        }
+
+        function saveCaptureData() {
+            if (!db || !currentSurveyDate) {
+                alert('データベースまたは日付が設定されていません');
+                return;
+            }
+
+            const captureData = {
+                surveyDate: currentSurveyDate,
+                stakeNumber: document.getElementById('captureStakeNumber').value,
+                plasticRing: document.getElementById('capturePlasticRing').value,
+                metalRing: document.getElementById('captureMetalRing').value,
+                BM: document.getElementById('captureBM').value,
+                BD: document.getElementById('captureBD').value,
+                HL: document.getElementById('captureHL').value,
+                TL: document.getElementById('captureTL').value,
+                WL: document.getElementById('captureWL').value,
+                bloodStart: document.getElementById('captureBloodStart').value,
+                bloodEnd: document.getElementById('captureBloodEnd').value,
+                logger: document.getElementById('captureLogger').value,
+                loggerID: document.getElementById('captureLoggerID').value,
+                releaseTime: document.getElementById('captureReleaseTime').value,
+                timestamp: new Date().toISOString()
+            };
+
+            // Save to IndexedDB (captures table - will be created on first use)
+            const transaction = db.transaction(['observations'], 'readwrite');
+            const captureStore = transaction.objectStore('observations');
+
+            // Use a unique key combining date, stake number, and timestamp
+            captureData.id = `capture_${currentSurveyDate}_${captureData.stakeNumber}_${Date.now()}`;
+            captureData.type = 'capture';
+
+            const request = captureStore.add(captureData);
+
+            request.onsuccess = () => {
+                showSuccessMessage('捕獲データを保存しました');
+                console.log('Capture data saved:', captureData);
+            };
+
+            request.onerror = () => {
+                alert('捕獲データの保存に失敗しました');
+                console.error('Error saving capture data');
+            };
+        }
+
+        // ========== CAPTURE TAB MANAGEMENT ==========
+        function switchCaptureTab(tabId) {
+            // Save current tab data before switching
+            saveCaptureTabData(currentCaptureTab);
+
+            // Switch to new tab
+            currentCaptureTab = tabId;
+
+            // Update tab UI
+            document.querySelectorAll('.capture-tab').forEach(tab => {
+                if (parseInt(tab.dataset.tabId) === tabId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Load tab data
+            loadCaptureTabData(tabId);
+        }
+
+        function addCaptureTab() {
+            // Save current tab data
+            saveCaptureTabData(currentCaptureTab);
+
+            // Increment counter
+            captureTabCounter++;
+            const newTabId = captureTabCounter;
+
+            // Create new tab element
+            const tabsContainer = document.getElementById('captureTabs');
+            const addButton = tabsContainer.querySelector('.capture-tab-add');
+
+            const newTab = document.createElement('div');
+            newTab.className = 'capture-tab';
+            newTab.dataset.tabId = newTabId;
+            newTab.onclick = () => switchCaptureTab(newTabId);
+            newTab.innerHTML = `
+                <span class="capture-tab-label">個体 ${newTabId}</span>
+                <button class="capture-tab-close" onclick="event.stopPropagation(); closeCaptureTab(${newTabId})">×</button>
+            `;
+
+            // Insert before add button
+            tabsContainer.insertBefore(newTab, addButton);
+
+            // Switch to new tab
+            switchCaptureTab(newTabId);
+        }
+
+        function closeCaptureTab(tabId) {
+            if (Object.keys(captureTabsData).length <= 1 && document.querySelectorAll('.capture-tab').length <= 1) {
+                alert('最後のタブは削除できません');
+                return;
+            }
+
+            if (!confirm(`個体 ${tabId} のタブを削除しますか？\n入力データは失われます。`)) {
+                return;
+            }
+
+            // Remove tab element
+            const tab = document.querySelector(`.capture-tab[data-tab-id="${tabId}"]`);
+            if (tab) {
+                tab.remove();
+            }
+
+            // Remove tab data
+            delete captureTabsData[tabId];
+
+            // If current tab was closed, switch to first available tab
+            if (currentCaptureTab === tabId) {
+                const firstTab = document.querySelector('.capture-tab');
+                if (firstTab) {
+                    const firstTabId = parseInt(firstTab.dataset.tabId);
+                    switchCaptureTab(firstTabId);
+                }
+            }
+        }
+
+        function saveCaptureTabData(tabId) {
+            captureTabsData[tabId] = {
+                stakeNumber: document.getElementById('captureStakeNumber').value,
+                plasticRing: document.getElementById('capturePlasticRing').value,
+                metalRing: document.getElementById('captureMetalRing').value,
+                BM: document.getElementById('captureBM').value,
+                BD: document.getElementById('captureBD').value,
+                HL: document.getElementById('captureHL').value,
+                TL: document.getElementById('captureTL').value,
+                WL: document.getElementById('captureWL').value,
+                bloodStart: document.getElementById('captureBloodStart').value,
+                bloodEnd: document.getElementById('captureBloodEnd').value,
+                logger: document.getElementById('captureLogger').value,
+                loggerID: document.getElementById('captureLoggerID').value,
+                releaseTime: document.getElementById('captureReleaseTime').value
+            };
+        }
+
+        function loadCaptureTabData(tabId) {
+            const data = captureTabsData[tabId] || {};
+
+            document.getElementById('captureStakeNumber').value = data.stakeNumber || '';
+            document.getElementById('capturePlasticRing').value = data.plasticRing || '';
+            document.getElementById('captureMetalRing').value = data.metalRing || '';
+            document.getElementById('captureBM').value = data.BM || '';
+            document.getElementById('captureBD').value = data.BD || '';
+            document.getElementById('captureHL').value = data.HL || '';
+            document.getElementById('captureTL').value = data.TL || '';
+            document.getElementById('captureWL').value = data.WL || '';
+            document.getElementById('captureBloodStart').value = data.bloodStart || '';
+            document.getElementById('captureBloodEnd').value = data.bloodEnd || '';
+            document.getElementById('captureLogger').value = data.logger || '';
+            document.getElementById('captureLoggerID').value = data.loggerID || '';
+            document.getElementById('captureReleaseTime').value = data.releaseTime || '';
         }
 
         // ========== TAB SWITCHING ==========
@@ -3608,6 +4179,11 @@
             const lengthInput = entryDiv.querySelector('.egg-length');
             const widthInput = entryDiv.querySelector('.egg-width');
             const eggNumberSelect = entryDiv.querySelector('.egg-number');
+
+            // Add long press functionality for editing
+            addLongPressEdit(weightInput, '重量 (g) - XX.X形式');
+            addLongPressEdit(lengthInput, '長径 (mm) - XX.XX形式');
+            addLongPressEdit(widthInput, '短径 (mm) - XX.XX形式');
 
             weightInput.addEventListener('focus', function() {
                 openKeyboard(this, '重量 (g) - XX.X形式');
